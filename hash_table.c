@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 #include "hash_table.h"
 
@@ -26,6 +27,6 @@ ioopm_hash_table_t *ioopm_hash_table_create(void) {
 
 void ioopm_hash_table_destroy(ioopm_hash_table_t *ht) {
   // Todo: stub
-    free(ht);
+    free (ht);
  return;
 }
