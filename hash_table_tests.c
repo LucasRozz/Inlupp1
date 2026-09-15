@@ -30,6 +30,28 @@ void test_create_destroy()
    ioopm_hash_table_destroy(ht);
 }
 
+void test_insert_once()
+{
+  // create new hash table
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  char *key = "abc";
+  int value = 123;
+
+  // check that key is not in ht
+  int result = 0;
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_EQUAL(result, 0);
+
+  // insert key-value pair and check that the mapping exists
+  ioopm_hash_table_insert(ht, key, value);
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_EQUAL(result, value);
+
+  // destroy hash table
+  ioopm_hash_table_destroy(ht);
+}
+
 
 int main() {
   // First we try to set up CUnit, and exit if we fail
