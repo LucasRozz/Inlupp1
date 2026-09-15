@@ -52,6 +52,63 @@ void test_insert_once()
   ioopm_hash_table_destroy(ht);
 }
 
+void test_update_key()
+{
+  // create new hash table
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  char *key = "abcd";
+  int value = 1212;
+
+  // check that key is not in ht
+  int result = 0;
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_EQUAL(result, 0);
+
+  // insert key-value pair and check that the mapping exists
+  ioopm_hash_table_insert(ht, key, value);
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_EQUAL(result, value);
+  value = 134;
+  ioopm_hash_table_insert(ht, key, value);
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_EQUAL(result, value);
+
+
+  // destroy hash table
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_insert_multiple()
+{
+  // create new hash table
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  char *keys[]   = {"a", "b", "c", "d", "e"};
+  int values[]   = {1, 2, 3, 4, 5};
+  int n = 5;
+
+  // insert every key-value pair
+  for (int i = 0; i < n; i++)
+  {
+    ioopm_hash_table_insert(ht, keys[i], values[i]);
+  }
+
+  // check that every key can be looked up and returns its own value
+  int result;
+  for (int i = 0; i < n; i++)
+  {
+    CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[i], &result));
+    CU_ASSERT_EQUAL(result, values[i]);
+  }
+
+  // a key that was never inserted should not be found
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, "never_inserted", &result));
+
+  // destroy hash table
+  ioopm_hash_table_destroy(ht);
+}
+
 
 int main() {
   // First we try to set up CUnit, and exit if we fail
@@ -73,8 +130,11 @@ int main() {
   // the test in question. If you want to add another test, just
   // copy a line below and change the information
   if (
-    (CU_add_test(my_test_suite, "creation and destroy test", test_create_destroy) == NULL) ||
-    0
+  (CU_add_test(my_test_suite, "creation and destroy test", test_create_destroy) == NULL) ||
+  (CU_add_test(my_test_suite, "test insert once", test_insert_once) == NULL)             ||
+  (CU_add_test(my_test_suite, "test insert two times", test_update_key) == NULL)          ||
+  (CU_add_test(my_test_suite, "test insert multiple keys", test_insert_multiple) == NULL) ||
+  0
   )
     {
       // If adding any of the tests fails, we tear down CUnit and exit
