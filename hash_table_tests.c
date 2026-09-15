@@ -109,6 +109,49 @@ void test_insert_multiple()
   ioopm_hash_table_destroy(ht);
 }
 
+void test_remove()
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  char *key1 = "x";
+  char *key2 = "y";
+  int result;
+
+  ioopm_hash_table_insert(ht, key1, 10);
+  ioopm_hash_table_insert(ht, key2, 20);
+
+  // remove an existing key: should succeed and return its value
+  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, key1, &result));
+  CU_ASSERT_EQUAL(result, 10);
+
+  // it should no longer be found afterwards
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, key1, &result));
+
+  // the other key should be untouched
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, key2, &result));
+  CU_ASSERT_EQUAL(result, 20);
+
+  // removing a key that doesn't exist should just return false
+  CU_ASSERT_FALSE(ioopm_hash_table_remove(ht, "not_a_key", &result));
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_entry_remove(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+ 
+
+  char *keys[]   = {"a", "b", "r", "d", "e"};
+  int values[]   = {1, 2, 3, 4, 5};
+  int n = 5;
+
+  // insert every key-value pair
+  for (int i = 0; i < n; i++)
+  {
+    ioopm_hash_table_insert(ht, keys[i], values[i]);
+  }
+  
+}
 
 int main() {
   // First we try to set up CUnit, and exit if we fail
@@ -130,10 +173,11 @@ int main() {
   // the test in question. If you want to add another test, just
   // copy a line below and change the information
   if (
-  (CU_add_test(my_test_suite, "creation and destroy test", test_create_destroy) == NULL) ||
-  (CU_add_test(my_test_suite, "test insert once", test_insert_once) == NULL)             ||
+  (CU_add_test(my_test_suite, "creation and destroy test", test_create_destroy) == NULL)  ||
+  (CU_add_test(my_test_suite, "test insert once", test_insert_once) == NULL)              ||
   (CU_add_test(my_test_suite, "test insert two times", test_update_key) == NULL)          ||
   (CU_add_test(my_test_suite, "test insert multiple keys", test_insert_multiple) == NULL) ||
+  (CU_add_test(my_test_suite, "test remove", test_remove) == NULL)                        ||
   0
   )
     {

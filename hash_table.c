@@ -33,10 +33,8 @@ void entry_destroy(entry_t *entry_remove){
   free(entry_remove);
 }
 
-// M39 and O44 goals
-
-
-void iter_entry_remove(entry_t *entry_remove){
+// M39 and O44 goal
+void iter_remove_all_entry(entry_t *entry_remove){
   entry_t *current = entry_remove;
   while(current != NULL){
     entry_t *next = current->next;
@@ -49,7 +47,7 @@ void ioopm_hash_table_destroy(ioopm_hash_table_t *ht) {
   // Todo: stub
   for(int i = 0; i < 17; i++){
     entry_t *entry_to_remove = ht->buckets[i].next;
-    iter_entry_remove(entry_to_remove);
+    iter_remove_all_entry(entry_to_remove);
     }
     free (ht);
  return;
@@ -84,7 +82,6 @@ entry_t *find_previous_entry(ioopm_hash_table_t *ht, char *key) {
   return previous;
 }
 
-
 void ioopm_hash_table_insert(ioopm_hash_table_t *ht, char *key, int value)
 {
   // find previous entry, or the last entry if the key does not exist
@@ -116,4 +113,22 @@ bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, char *key, int *result)
   {
     return false;
   }
+}
+
+bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result){
+  if(ioopm_hash_table_lookup(ht, key, result)){
+    entry_t *current = find_previous_entry(ht, key);
+    entry_t *next_entry = current->next;
+    
+    while(next_entry != NULL){
+      if(strcmp(next_entry->key, key) == 0){
+        current->next = next_entry->next;
+        entry_destroy(next_entry);
+        return true;
+      }
+      current->next = next_entry;
+      next_entry = next_entry->next;
+    }
+  }
+  return false;
 }
