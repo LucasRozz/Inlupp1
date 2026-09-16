@@ -139,7 +139,6 @@ void test_remove()
 
 void test_entry_remove(){
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
- 
 
   char *keys[]   = {"A*", "B-", "C0", "d", "e"};
   int values[]   = {1, 2, 3, 4, 5};
@@ -173,12 +172,10 @@ void test_has_key_2(){
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
   char *keys[]= {"hej", "då"};
   int values[] = {1, 2};
-  int result;
   
   ioopm_hash_table_insert(ht, keys[0], values[0]);
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[0], &result));
-  CU_ASSERT_EQUAL(result, values[0]);
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, keys[1], &result));
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, keys[0]));
+  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, keys[1]));
 
   ioopm_hash_table_destroy(ht);
 }
@@ -209,7 +206,7 @@ void test_has_key_4(){
 
   ioopm_hash_table_insert(ht, key, value);
   ioopm_hash_table_remove(ht, key, &result);
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, key));
   CU_ASSERT_EQUAL(result, 67);
 
   ioopm_hash_table_destroy(ht);
@@ -226,14 +223,11 @@ void test_has_key_5(){
   ioopm_hash_table_insert(ht, keys[2], values[2]);
 
   ioopm_hash_table_remove(ht, keys[1], &result);
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[0], &result));
-  CU_ASSERT_EQUAL(result, values[0]);
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, keys[0]));
 
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[2], &result));
-  CU_ASSERT_EQUAL(result, values[2]);
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, keys[2]));
 
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, keys[1], &result));
-  CU_ASSERT_EQUAL(result, values[2]);
+  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, keys[1]));
 
   ioopm_hash_table_destroy(ht);
 }
@@ -273,6 +267,21 @@ void hash_table_remove_size_test(){
   CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 2);
 }
 
+void hash_table_remove_to_empty_test(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *keys[]= {"hej", "då", "va"};
+  int values[] = {1, 2, 3};
+  int result;
+  for(int i = 0; i < 4; i ++){
+    ioopm_hash_table_insert(ht, keys[i], values[i]);
+  }
+  ioopm_hash_table_remove(ht, keys[0], &result);
+  ioopm_hash_table_remove(ht, keys[1], &result);
+  ioopm_hash_table_remove(ht, keys[2], &result);
+  CU_ASSERT_TRUE(ioopm_hash_table_is_empty(ht));
+
+}
+
 int main() {
   // First we try to set up CUnit, and exit if we fail
   if (CU_initialize_registry() != CUE_SUCCESS)
@@ -297,7 +306,12 @@ int main() {
   (CU_add_test(my_test_suite, "test insert once", test_insert_once) == NULL)              ||
   (CU_add_test(my_test_suite, "test insert two times", test_update_key) == NULL)          ||
   (CU_add_test(my_test_suite, "test insert multiple keys", test_insert_multiple) == NULL) ||
-  (CU_add_test(my_test_suite, "test remove", test_remove) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test entry remove", test_entry_remove) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove", test_has_key_1) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove", test_has_key_2) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove", test_has_key_3) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove", test_has_key_4) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove", test_has_key_5) == NULL)                        ||
   0
   )
     {
