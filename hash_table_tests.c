@@ -1,5 +1,6 @@
 #include <CUnit/Basic.h>
 #include "hash_table.h"
+#include "hash_table_iterator.h"
 
 int init_suite(void) {
   // Change this function if you want to do something *before* you
@@ -281,6 +282,38 @@ void hash_table_remove_to_empty_test(){
   CU_ASSERT_TRUE(ioopm_hash_table_is_empty(ht));
 
 }
+
+void test_iterator_empty_table(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
+  
+  CU_ASSERT_TRUE(ioopm_hash_table_iterator_at_end(it));
+
+  ioopm_hash_table_destroy(ht);
+  ioopm_hash_table_iterator_destroy(it);
+}
+
+void test_iterator_single_table(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
+
+  char *key = "hej";
+  int value = 1;
+  ioopm_hash_table_insert(ht, key, value);
+
+  CU_ASSERT_EQUAL(ioopm_hash_table_iterator_current_value(it), 1);
+  CU_ASSERT_STRING_EQUAL(ioopm_hash_table_iterator_current_key(it), key);
+  ioopm_hash_table_iterator_advance(it);
+
+  CU_ASSERT_TRUE(ioopm_hash_table_iterator_at_end(it));
+  ioopm_hash_table_destroy(ht);
+  ioopm_hash_table_iterator_destroy(it);  
+}
+
+
+
+
+
 
 int main() {
   // First we try to set up CUnit, and exit if we fail

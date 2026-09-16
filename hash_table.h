@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #pragma once
+#define No_buckets 17
 
 /**
 * @file hash_table.h
@@ -13,7 +14,12 @@
 *
 */
 
+
+typedef struct entry entry_t;
 typedef struct hash_table ioopm_hash_table_t;
+
+
+
 
 /// @brief Create a new hash table
 /// @return A new empty hash table
@@ -52,3 +58,4 @@ bool ioopm_hash_table_is_empty(ioopm_hash_table_t *ht);
 // TODO: documentation
 int ioopm_hash_table_size(ioopm_hash_table_t *ht);
 
+bool ioopm_hash_table_is_empty(ioopm_hash_table_t *ht);

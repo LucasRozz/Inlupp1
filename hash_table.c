@@ -3,12 +3,11 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 
 #include "hash_table.h"
+#include "hash_table_iterator.h"
 #define No_buckets 17
-
-typedef struct hash_table ioopm_hash_table_t;
-typedef struct entry entry_t;
 
 struct entry
 {
@@ -25,6 +24,13 @@ struct hash_table
   // NOTE: addressing this dodge is optional.
   entry_t buckets[No_buckets];
   int size;
+};
+
+struct hash_table_iterator
+{
+  ioopm_hash_table_t *ht;
+  int current_bucket;
+  entry_t *current_entry;
 };
 
 ioopm_hash_table_t *ioopm_hash_table_create()
@@ -121,23 +127,6 @@ bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, char *key, int *result)
 }
 
 bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result){
-  /*if(ioopm_hash_table_lookup(ht, key, result)){
-    entry_t *current = find_previous_entry(ht, key);
-    entry_t *following_entry = current->next;
-    
-    while(following_entry != NULL){
-      if(strcmp(following_entry->key, key) == 0){
-        current->next = following_entry->next;
-        *result = following_entry->value;
-        entry_destroy(following_entry);
-        return true;
-
-      }
-      current->next = following_entry;
-      following_entry = following_entry->next;
-    }
-    }
-  return false;*/
     entry_t *previous = find_previous_entry(ht, key);
     entry_t *target = previous->next;
     if(target == NULL){
@@ -153,10 +142,8 @@ bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result){
 }
 
 bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, char *key){
-  //Stub
-  (void) ht;
-  (void) key;
-  return false;
+  int result;
+  return ioopm_hash_table_lookup(ht, key, &result);
 }
 
 int ioopm_hash_table_size(ioopm_hash_table_t *ht){
@@ -165,4 +152,41 @@ int ioopm_hash_table_size(ioopm_hash_table_t *ht){
 
 bool ioopm_hash_table_is_empty(ioopm_hash_table_t *ht){
   return ioopm_hash_table_size(ht) > 0 ? false : true;
+}
+
+ioopm_hash_table_iterator_t *ioopm_hash_table_iterator_create(ioopm_hash_table_t *ht){
+  (void) ht;
+  //stubb
+  return;
+}
+
+void ioopm_hash_table_iterator_destroy(ioopm_hash_table_iterator_t *it) {
+  //stubb
+  (void) it;
+  return;
+}
+
+bool ioopm_hash_table_iterator_at_end(ioopm_hash_table_iterator_t *it){
+  //STUBB
+  (void) it;
+  return false;
+}
+
+
+void ioopm_hash_table_iterator_advance(ioopm_hash_table_iterator_t *it){
+  //stubb
+  (void) it;
+  return;
+}
+
+char *ioopm_hash_table_iterator_current_key(ioopm_hash_table_iterator_t *it){
+  //STUBB
+  (void) it;
+  return;
+}
+
+int ioopm_hash_table_iterator_current_value(ioopm_hash_table_iterator_t *it){
+  (void) it;
+  //stubb
+  return 0;
 }

@@ -4,8 +4,8 @@
 
 /**
 * @file hash_table_iterator.h
-* @author write both your names here
-* @date 1 Sep 2022
+* @author Lowe Lindin, Lucas Stenros
+* @date 2026-09-16
 * @brief Simple hash table iterator
 *
 * Hash table iterators provide an interface to iterate through all entries in a hash table.
