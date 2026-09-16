@@ -163,8 +163,7 @@ void test_entry_remove(){
 void test_has_key_1(){
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
   char *key= "hej";
-  int result;
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, key));
 
   ioopm_hash_table_destroy(ht);
 }
@@ -295,24 +294,46 @@ void test_iterator_empty_table(){
 
 void test_iterator_single_table(){
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
-  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
 
   char *key = "hej";
   int value = 1;
   ioopm_hash_table_insert(ht, key, value);
+  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
 
   CU_ASSERT_EQUAL(ioopm_hash_table_iterator_current_value(it), 1);
   CU_ASSERT_STRING_EQUAL(ioopm_hash_table_iterator_current_key(it), key);
-  ioopm_hash_table_iterator_advance(it);
 
+  ioopm_hash_table_iterator_advance(it);
+  
   CU_ASSERT_TRUE(ioopm_hash_table_iterator_at_end(it));
+
   ioopm_hash_table_destroy(ht);
   ioopm_hash_table_iterator_destroy(it);  
 }
 
+void test_iterator_several_entries()
+{
+  char *keys[3] = {"abc", "qwe", "asd"};
+  int values[3] = {0, 1, 2};
 
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  for (int i = 0; i != 3; ++i)
+  {
+    ioopm_hash_table_insert(ht, keys[i], values[i]);
+  }
 
+  int iteration_count = 0;
 
+  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
+  while (!ioopm_hash_table_iterator_at_end(it))
+  {
+    iteration_count++;
+    ioopm_hash_table_iterator_advance(it);
+  }
+  ioopm_hash_table_destroy(ht);
+  ioopm_hash_table_iterator_destroy(it);
+  CU_ASSERT_EQUAL(iteration_count, 3);
+}
 
 
 int main() {
@@ -340,11 +361,14 @@ int main() {
   (CU_add_test(my_test_suite, "test insert two times", test_update_key) == NULL)          ||
   (CU_add_test(my_test_suite, "test insert multiple keys", test_insert_multiple) == NULL) ||
   (CU_add_test(my_test_suite, "test entry remove", test_entry_remove) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove", test_has_key_1) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove", test_has_key_2) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove", test_has_key_3) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove", test_has_key_4) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove", test_has_key_5) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove 1", test_has_key_1) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove 2", test_has_key_2) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove 3", test_has_key_3) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove 4", test_has_key_4) == NULL)                        ||
+  (CU_add_test(my_test_suite, "test remove 5", test_has_key_5) == NULL)                        ||
+  (CU_add_test(my_test_suite, "ITERATOR TEST EMPTY", test_iterator_empty_table) == NULL)                        ||
+  (CU_add_test(my_test_suite, "ITERATOR TEST SINGLE", test_iterator_single_table) == NULL)                        ||
+  (CU_add_test(my_test_suite, "ITERATOR TEST SEVERAL", test_iterator_several_entries) == NULL)                        ||
   0
   )
     {
