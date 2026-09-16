@@ -103,7 +103,7 @@ void test_insert_multiple()
   }
 
   // a key that was never inserted should not be found
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, "never_inserted", &result));
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, "fel", &result));
 
   // destroy hash table
   ioopm_hash_table_destroy(ht);

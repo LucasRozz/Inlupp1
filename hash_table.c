@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "hash_table.h"
+#define No_buckets 17
+
 typedef struct hash_table ioopm_hash_table_t;
 typedef struct entry entry_t;
 
@@ -20,7 +23,7 @@ struct hash_table
 {
   // DODGE: hard-coding number of buckets as 17.
   // NOTE: addressing this dodge is optional.
-  entry_t buckets[17];
+  entry_t buckets[No_buckets];
 };
 
 ioopm_hash_table_t *ioopm_hash_table_create()
@@ -29,13 +32,13 @@ ioopm_hash_table_t *ioopm_hash_table_create()
   return calloc(1, sizeof(ioopm_hash_table_t));
 }
 
-void entry_destroy(entry_t *entry_remove){
+static void entry_destroy(entry_t *entry_remove){
   free(entry_remove);
 }
 
 // M39 and O44 goal
-void iter_remove_all_entry(entry_t *entry_remove){
-  entry_t *current = entry_remove;
+static void iter_remove_all_entry(entry_t *entry_to_remove){
+  entry_t *current = entry_to_remove;
   while(current != NULL){
     entry_t *next = current->next;
     entry_destroy(current);
@@ -45,7 +48,7 @@ void iter_remove_all_entry(entry_t *entry_remove){
 
 void ioopm_hash_table_destroy(ioopm_hash_table_t *ht) {
   // Todo: stub
-  for(int i = 0; i < 17; i++){
+  for(int i = 0; i < No_buckets; i++){
     entry_t *entry_to_remove = ht->buckets[i].next;
     iter_remove_all_entry(entry_to_remove);
     }
@@ -73,8 +76,8 @@ static size_t string_knr_hash(const char *str)
   return result;
 }
 
-entry_t *find_previous_entry(ioopm_hash_table_t *ht, char *key) {
-    size_t bucket = string_knr_hash(key) % 17;
+static entry_t *find_previous_entry(ioopm_hash_table_t *ht, char *key) {
+    size_t bucket = string_knr_hash(key) % No_buckets;
     entry_t *previous = &ht->buckets[bucket];
     while(previous->next != NULL && strcmp(previous->next->key, key) != 0){
       previous = previous->next;
@@ -118,16 +121,17 @@ bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, char *key, int *result)
 bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result){
   if(ioopm_hash_table_lookup(ht, key, result)){
     entry_t *current = find_previous_entry(ht, key);
-    entry_t *next_entry = current->next;
+    entry_t *following_entry = current->next;
     
-    while(next_entry != NULL){
-      if(strcmp(next_entry->key, key) == 0){
-        current->next = next_entry->next;
-        entry_destroy(next_entry);
+    while(following_entry != NULL){
+      if(strcmp(following_entry->key, key) == 0){
+        current->next = following_entry->next;
+        entry_destroy(following_entry);
         return true;
+
       }
-      current->next = next_entry;
-      next_entry = next_entry->next;
+      current->next = following_entry;
+      following_entry = following_entry->next;
     }
   }
   return false;
