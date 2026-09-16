@@ -105,8 +105,8 @@ void ioopm_hash_table_insert(ioopm_hash_table_t *ht, char *key, int value)
   else
   {
     previous->next = entry_create(key, value, NULL);
+    ht->size += 1;
   }
-  ht->size += 1;
 }
 
 
@@ -210,16 +210,10 @@ void ioopm_hash_table_iterator_advance(ioopm_hash_table_iterator_t *it){
 
 char *ioopm_hash_table_iterator_current_key(ioopm_hash_table_iterator_t *it){
   //STUBB
-  if(it->current_entry->key == NULL){
-    return "hej";
-  }
   return it->current_entry->key;
 }
 
 int ioopm_hash_table_iterator_current_value(ioopm_hash_table_iterator_t *it){
   //stubb
-  if(it->current_entry == NULL){
-    return 0;
-  }
   return it->current_entry->value;
 }
