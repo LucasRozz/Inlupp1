@@ -141,7 +141,7 @@ void test_entry_remove(){
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
  
 
-  char *keys[]   = {"a", "b", "r", "d", "e"};
+  char *keys[]   = {"A*", "B-", "C0", "d", "e"};
   int values[]   = {1, 2, 3, 4, 5};
   int n = 5;
 
@@ -150,7 +150,127 @@ void test_entry_remove(){
   {
     ioopm_hash_table_insert(ht, keys[i], values[i]);
   }
+  int result;
+  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, keys[1], &result));
+  CU_ASSERT_EQUAL(result, 2);
+  CU_ASSERT_FALSE(ioopm_hash_table_remove(ht, keys[1], &result));
+  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, keys[2], &result));
+  CU_ASSERT_EQUAL(result, 3);
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_has_key_1(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *key= "hej";
+  int result;
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, key, &result));
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_has_key_2(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *keys[]= {"hej", "då"};
+  int values[] = {1, 2};
+  int result;
   
+  ioopm_hash_table_insert(ht, keys[0], values[0]);
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[0], &result));
+  CU_ASSERT_EQUAL(result, values[0]);
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, keys[1], &result));
+
+  ioopm_hash_table_destroy(ht);
+}
+
+
+
+void test_has_key_3(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *keys[]= {"hej", "då", "va", "Buh"};
+  int values[] = {1, 2, 3, 4};
+  ioopm_hash_table_insert(ht, keys[0], values[0]);
+  ioopm_hash_table_insert(ht, keys[1], values[1]);
+  ioopm_hash_table_insert(ht, keys[2], values[2]);
+  
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, keys[0]));
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, keys[1]));
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, keys[2]));
+  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, keys[3]));
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_has_key_4(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *key = "hej";
+  int value = 67;
+  int result;
+
+  ioopm_hash_table_insert(ht, key, value);
+  ioopm_hash_table_remove(ht, key, &result);
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, key, &result));
+  CU_ASSERT_EQUAL(result, 67);
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_has_key_5(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *keys[]= {"hej", "då", "va"};
+  int values[] = {1, 2, 3};
+  int result;
+
+  ioopm_hash_table_insert(ht, keys[0], values[0]);
+  ioopm_hash_table_insert(ht, keys[1], values[1]);
+  ioopm_hash_table_insert(ht, keys[2], values[2]);
+
+  ioopm_hash_table_remove(ht, keys[1], &result);
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[0], &result));
+  CU_ASSERT_EQUAL(result, values[0]);
+
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[2], &result));
+  CU_ASSERT_EQUAL(result, values[2]);
+
+  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, keys[1], &result));
+  CU_ASSERT_EQUAL(result, values[2]);
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void hash_table_empty_size_test(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 0);
+}
+
+void hash_table_single_size_test(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *key = "hej";
+  int value = 1;
+  ioopm_hash_table_insert(ht, key, value);
+  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 1);
+}
+
+void hash_table_multi_size_test(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *keys[]= {"hej", "då", "va", "buh", "apa"};
+  int values[] = {1, 2, 3, 4, 5};
+  for(int i = 0; i < 5; i ++){
+    ioopm_hash_table_insert(ht, keys[i], values[i]);
+  }
+  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 5);
+}
+
+void hash_table_remove_size_test(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *keys[]= {"hej", "då", "va"};
+  int values[] = {1, 2, 3};
+  int result;
+  for(int i = 0; i < 4; i ++){
+    ioopm_hash_table_insert(ht, keys[i], values[i]);
+  }
+  ioopm_hash_table_remove(ht, keys[1], &result);
+  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 2);
 }
 
 int main() {

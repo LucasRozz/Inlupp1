@@ -24,6 +24,7 @@ struct hash_table
   // DODGE: hard-coding number of buckets as 17.
   // NOTE: addressing this dodge is optional.
   entry_t buckets[No_buckets];
+  int size;
 };
 
 ioopm_hash_table_t *ioopm_hash_table_create()
@@ -75,7 +76,6 @@ static size_t string_knr_hash(const char *str)
   }
   return result;
 }
-
 static entry_t *find_previous_entry(ioopm_hash_table_t *ht, char *key) {
     size_t bucket = string_knr_hash(key) % No_buckets;
     entry_t *previous = &ht->buckets[bucket];
@@ -84,6 +84,7 @@ static entry_t *find_previous_entry(ioopm_hash_table_t *ht, char *key) {
     }
   return previous;
 }
+
 
 void ioopm_hash_table_insert(ioopm_hash_table_t *ht, char *key, int value)
 {
@@ -99,6 +100,7 @@ void ioopm_hash_table_insert(ioopm_hash_table_t *ht, char *key, int value)
   {
     previous->next = entry_create(key, value, NULL);
   }
+  ht->size += 1;
 }
 
 
@@ -119,13 +121,14 @@ bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, char *key, int *result)
 }
 
 bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result){
-  if(ioopm_hash_table_lookup(ht, key, result)){
+  /*if(ioopm_hash_table_lookup(ht, key, result)){
     entry_t *current = find_previous_entry(ht, key);
     entry_t *following_entry = current->next;
     
     while(following_entry != NULL){
       if(strcmp(following_entry->key, key) == 0){
         current->next = following_entry->next;
+        *result = following_entry->value;
         entry_destroy(following_entry);
         return true;
 
@@ -133,6 +136,33 @@ bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result){
       current->next = following_entry;
       following_entry = following_entry->next;
     }
-  }
+    }
+  return false;*/
+    entry_t *previous = find_previous_entry(ht, key);
+    entry_t *target = previous->next;
+    if(target == NULL){
+      return false;
+    }
+    else{
+    *result = target->value;
+    previous->next = target->next;
+    entry_destroy(target);
+    ht->size -= 1;
+    return true;
+    }
+}
+
+bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, char *key){
+  //Stub
+  (void) ht;
+  (void) key;
   return false;
+}
+
+int ioopm_hash_table_size(ioopm_hash_table_t *ht){
+  return ht->size;
+}
+
+bool ioopm_hash_table_is_empty(ioopm_hash_table_t *ht){
+  return ioopm_hash_table_size(ht) > 0 ? false : true;
 }
