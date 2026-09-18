@@ -45,6 +45,48 @@ void test_head_and_last(void){
   CU_ASSERT_EQUAL(ioopm_list_last(list), 34);
   ioopm_list_destroy(list);
 }
+
+void test_insert(void){
+  ioopm_list_t *list = ioopm_list_create();
+  ioopm_list_append(list, 3);
+  ioopm_list_append(list, 4);
+  ioopm_list_prepend(list, 2);
+  ioopm_list_insert(list, 0, 1);
+  ioopm_list_insert(list, 4, 5);
+  CU_ASSERT_EQUAL(ioopm_list_head(list), 1);
+  CU_ASSERT_EQUAL(ioopm_list_last(list), 5);
+  ioopm_list_destroy(list);
+}
+
+void test_remove(void){
+    ioopm_list_t *list = ioopm_list_create();
+    int result = 0;
+    ioopm_list_insert(list, 0, 5);
+    ioopm_list_insert(list, 0, 4);
+    ioopm_list_insert(list, 0, 3);
+    ioopm_list_insert(list, 0, 2);
+    ioopm_list_insert(list, 0, 1);
+
+    CU_ASSERT_TRUE(ioopm_list_remove(list, 0, &result));
+    CU_ASSERT_EQUAL(result, 1);
+    CU_ASSERT_TRUE(ioopm_list_remove(list, 3, &result));
+    CU_ASSERT_EQUAL(result, 5);
+    ioopm_list_destroy(list);
+
+}
+
+void test_get(void){
+  ioopm_list_t *list = ioopm_list_create();
+    int result = 0;
+    ioopm_list_insert(list, 0, 5);
+    ioopm_list_insert(list, 1, 4);
+    ioopm_list_insert(list, 2, 3);
+    ioopm_list_insert(list, 3, 2);
+    ioopm_list_insert(list, 4, 1);
+    CU_ASSERT_TRUE(ioopm_list_get(list, 2, &result));
+    CU_ASSERT_EQUAL(result, 3);
+    ioopm_list_destroy(list);
+}
 int main() {
   // First we try to set up CUnit, and exit if we fail
   if (CU_initialize_registry() != CUE_SUCCESS)
@@ -69,6 +111,9 @@ int main() {
     (CU_add_test(my_test_suite, "test for adding a node and checking size", test_add_one_node) == NULL) ||
     (CU_add_test(my_test_suite, "test for adding and getting head from list", test_add_and_get_head) == NULL) ||
     (CU_add_test(my_test_suite, "test for getting head and last from list", test_add_and_get_head) == NULL) ||
+    (CU_add_test(my_test_suite, "test insert head and last", test_insert) == NULL) ||
+    (CU_add_test(my_test_suite, "test remove", test_remove) == NULL) ||
+    (CU_add_test(my_test_suite, "test get", test_get) == NULL) ||
     0
   )
     {
