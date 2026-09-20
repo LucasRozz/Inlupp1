@@ -76,17 +76,42 @@ void test_remove(void){
 }
 
 void test_get(void){
-  ioopm_list_t *list = ioopm_list_create();
+    ioopm_list_t *list = ioopm_list_create();
     int result = 0;
-    ioopm_list_insert(list, 0, 5);
-    ioopm_list_insert(list, 1, 4);
-    ioopm_list_insert(list, 2, 3);
-    ioopm_list_insert(list, 3, 2);
-    ioopm_list_insert(list, 4, 1);
+
+    // Single-element list: getting index 0
+    ioopm_list_append(list, 5);
+    CU_ASSERT_TRUE(ioopm_list_get(list, 0, &result));
+    CU_ASSERT_EQUAL(result, 5);
+
+    // Grow the list and check head, middle, and last
+    ioopm_list_insert(list, 1, 10);
+    ioopm_list_insert(list, 2, 15);
+    ioopm_list_append(list, 20);
+    // list is now [5, 10, 15, 20]
+
+    CU_ASSERT_TRUE(ioopm_list_get(list, 0, &result));
+    CU_ASSERT_EQUAL(result, 5);
+
     CU_ASSERT_TRUE(ioopm_list_get(list, 2, &result));
-    CU_ASSERT_EQUAL(result, 3);
+    CU_ASSERT_EQUAL(result, 15);
+
+    CU_ASSERT_TRUE(ioopm_list_get(list, 3, &result));
+    CU_ASSERT_EQUAL(result, 20);
+
+    // Out-of-bounds indices should return false
+    CU_ASSERT_FALSE(ioopm_list_get(list, -1, &result));
+    CU_ASSERT_FALSE(ioopm_list_get(list, 4, &result));
+
+    CU_ASSERT_TRUE(ioopm_list_remove(list, 2, &result));
+    CU_ASSERT_EQUAL(result, 15);
+
+    CU_ASSERT_TRUE(ioopm_list_get(list, 2, &result));
+    CU_ASSERT_EQUAL(result, 20);
+
     ioopm_list_destroy(list);
 }
+
 int main() {
   // First we try to set up CUnit, and exit if we fail
   if (CU_initialize_registry() != CUE_SUCCESS)

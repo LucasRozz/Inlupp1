@@ -116,7 +116,7 @@ void ioopm_list_insert(ioopm_list_t *list, int index, int value){
     ioopm_list_element_t *current = find_previous_node(list, index);
     new->tail = current->tail;
     current->tail = new;
-    list->size ++;
+    list->size ++;  
 }
 
 bool ioopm_list_remove(ioopm_list_t *list, int index, int *result){
@@ -126,27 +126,31 @@ bool ioopm_list_remove(ioopm_list_t *list, int index, int *result){
     }
 
     ioopm_list_element_t *current = list->first;
-    ioopm_list_element_t *remove = list->first;
     if(index == 0){
-        list->first = list->first->tail;
-        *result = remove->value;
-        free(remove);
+        *result = current->value;
+        list->first = current->tail;
+        free(current);
         list->size --;
+        if(list->size == 0){
+            list->last = NULL;
+        }
         return true;
     }
+    
     current = find_previous_node(list, index);
+    ioopm_list_element_t *to_remove = current->tail;
     if(index == size - 1){
         list->last = current;
-        *result = current->tail->value; 
-        free(current->tail);
+        *result = to_remove->value; 
+        free(to_remove);
+        current->tail = NULL;
         list->size --;
         return true;
     }
 
-    remove = current->tail;
-    current->tail = remove->tail;
-    *result = remove->value;
-    free(remove);
+    current->tail = to_remove->tail;
+    *result = to_remove->value;
+    free(to_remove);
     list->size --;
     return true;
 }
@@ -159,6 +163,7 @@ bool ioopm_list_get(ioopm_list_t *list, int index, int *result){
         *result = list->first->value;
         return true;
     }
+
     ioopm_list_element_t *element = find_previous_node(list, index);
     *result = element->tail->value;
     return true;
