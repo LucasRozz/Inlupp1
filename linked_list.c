@@ -3,8 +3,10 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 
 #include "linked_list.h"
+#include "list_iterator.h"
 
 struct ioopm_list_element{
     int value;
@@ -15,6 +17,12 @@ struct list{
     ioopm_list_element_t *first;
     ioopm_list_element_t *last;
     int size;
+};
+
+struct list_iterator{
+    ioopm_list_t *list;
+    ioopm_list_element_t *current_element;
+    int index;
 };
 
 ioopm_list_t *ioopm_list_create(void){
@@ -179,5 +187,43 @@ int ioopm_list_size(ioopm_list_t *list){
 
 bool ioopm_list_is_empty(ioopm_list_t *list){
     return ioopm_list_size(list) == 0 ? true : false;
+}
+
+//ITERATOR TYPESHIT
+
+ioopm_list_iterator_t *ioopm_list_iterator_create(ioopm_list_t *l){
+    ioopm_list_iterator_t *iter = calloc(sizeof(ioopm_list_iterator_t), 1);
+    iter->list = l;
+    iter->index = 0;    
+    if(iter->list->size == 0){
+        iter->current_element = NULL;
+        return iter;
+    }
+    iter->current_element = l->first;
+    return iter;
+}
+
+void ioopm_list_iterator_destroy(ioopm_list_iterator_t *iter){
+    free(iter);
+}
+
+bool ioopm_list_iterator_at_end(ioopm_list_iterator_t *iter){
+    return iter->current_element != NULL ? true : false;
+}
+
+void ioopm_list_iterator_advance(ioopm_list_iterator_t *iter){
+    assert(!ioopm_list_iterator_at_end(iter) && "iterator at end when advancing");
+    iter->current_element = iter->current_element->tail;
+    iter->index ++;
+}
+
+int ioopm_list_iterator_current(ioopm_list_iterator_t *iter){ 
+    return iter->current_element->value;
+}
+
+int ioopm_list_iterator_remove(ioopm_list_iterator_t *iter){
+    int removed;
+    ioopm_list_remove(iter->list, iter->index, &removed);
+    return removed;
 }
 
