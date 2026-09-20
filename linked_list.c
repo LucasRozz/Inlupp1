@@ -18,7 +18,15 @@ struct list{
 };
 
 ioopm_list_t *ioopm_list_create(void){
-    return calloc(sizeof(ioopm_list_t), 1);
+    ioopm_list_t *new = calloc(sizeof(ioopm_list_t), 1);
+    new->size = 0;
+    return new;
+}
+
+static ioopm_list_element_t *create_element(int value){
+    ioopm_list_element_t *new = calloc(sizeof(ioopm_list_element_t), 1);
+    new->value = value;
+    return new;
 }
 
 void ioopm_list_destroy(ioopm_list_t *list){
@@ -27,6 +35,7 @@ void ioopm_list_destroy(ioopm_list_t *list){
         free(list);
         return;
     }
+
     list->first = element->tail;
     free(element);
     ioopm_list_destroy(list);
@@ -52,29 +61,25 @@ static void list_insert_first_node(ioopm_list_t *list, ioopm_list_element_t *ele
 
 static ioopm_list_element_t *find_previous_node(ioopm_list_t *list, int index){
     ioopm_list_element_t *previous = list->first;
+
     for(int i = 0; i < index - 1 ; i ++){
         previous = previous->tail;
     }
     return previous;
 }
 
-
-
 void ioopm_list_append(ioopm_list_t *list, int value){
-    ioopm_list_element_t *new = calloc(sizeof(ioopm_list_element_t), 1);
-    new->value = value;
+    ioopm_list_element_t *new = create_element(value);
 
     if(list->size == 0){
         list_first_node_create(list, new);
-        return;
     }else{
         list_insert_last_node(list, new);
     }
 }
 
 void ioopm_list_prepend(ioopm_list_t *list, int value){
-    ioopm_list_element_t *new = calloc(sizeof(ioopm_list_element_t), 1);
-    new->value = value;
+    ioopm_list_element_t *new = create_element(value);
 
     if(list->size == 0){
         list_first_node_create(list, new);
@@ -101,8 +106,7 @@ void ioopm_list_insert(ioopm_list_t *list, int index, int value){
     if(index > size || index < 0){
         return;
     }
-    ioopm_list_element_t *new = calloc(sizeof(ioopm_list_element_t), 1);
-    new->value = value;
+    ioopm_list_element_t *new = create_element(value);
 
     if(index == 0) {
         list_insert_first_node(list, new);
@@ -136,7 +140,7 @@ bool ioopm_list_remove(ioopm_list_t *list, int index, int *result){
         }
         return true;
     }
-    
+
     current = find_previous_node(list, index);
     ioopm_list_element_t *to_remove = current->tail;
     if(index == size - 1){
@@ -169,5 +173,11 @@ bool ioopm_list_get(ioopm_list_t *list, int index, int *result){
     return true;
 }
 
+int ioopm_list_size(ioopm_list_t *list){
+    return list->size;
+}
 
+bool ioopm_list_is_empty(ioopm_list_t *list){
+    return ioopm_list_size(list) == 0 ? true : false;
+}
 
