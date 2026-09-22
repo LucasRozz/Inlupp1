@@ -87,17 +87,16 @@ void test_insert_multiple()
 
   char *keys[]   = {"a", "b", "c", "d", "e"};
   int values[]   = {1, 2, 3, 4, 5};
-  int n = 5;
 
   // insert every key-value pair
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < 5; i++)
   {
     ioopm_hash_table_insert(ht, keys[i], values[i]);
   }
 
   // check that every key can be looked up and returns its own value
   int result;
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < 5; i++)
   {
     CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, keys[i], &result));
     CU_ASSERT_EQUAL(result, values[i]);
@@ -143,10 +142,9 @@ void test_entry_remove(){
 
   char *keys[]   = {"A*", "B-", "C0", "d", "e"};
   int values[]   = {1, 2, 3, 4, 5};
-  int n = 5;
 
   // insert every key-value pair
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < 5; i++)
   {
     ioopm_hash_table_insert(ht, keys[i], values[i]);
   }
@@ -249,7 +247,7 @@ void hash_table_multi_size_test(){
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
   char *keys[]= {"hej", "då", "va", "buh", "apa"};
   int values[] = {1, 2, 3, 4, 5};
-  for(int i = 0; i < 5; i ++){
+  for(size_t i = 0; i < 5; i++){
     ioopm_hash_table_insert(ht, keys[i], values[i]);
   }
   CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 5);
@@ -260,7 +258,7 @@ void hash_table_remove_size_test(){
   char *keys[]= {"hej", "då", "va"};
   int values[] = {1, 2, 3};
   int result;
-  for(int i = 0; i < 4; i ++){
+  for(size_t i = 0; i < 3; i++){
     ioopm_hash_table_insert(ht, keys[i], values[i]);
   }
   ioopm_hash_table_remove(ht, keys[1], &result);
@@ -272,14 +270,15 @@ void hash_table_remove_to_empty_test(){
   char *keys[]= {"hej", "då", "va"};
   int values[] = {1, 2, 3};
   int result;
-  for(int i = 0; i < 4; i ++){
+  for(size_t i = 0; i < 3; i++){
     ioopm_hash_table_insert(ht, keys[i], values[i]);
   }
   ioopm_hash_table_remove(ht, keys[0], &result);
   ioopm_hash_table_remove(ht, keys[1], &result);
   ioopm_hash_table_remove(ht, keys[2], &result);
   CU_ASSERT_TRUE(ioopm_hash_table_is_empty(ht));
-
+    
+  ioopm_hash_table_destroy(ht);
 }
 
 void test_iterator_empty_table(){
@@ -317,7 +316,7 @@ void test_iterator_several_entries()
   int values[3] = {0, 1, 2};
 
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
-  for (int i = 0; i != 3; ++i)
+  for (size_t i = 0; i != 3; ++i)
   {
     ioopm_hash_table_insert(ht, keys[i], values[i]);
   }
@@ -366,6 +365,7 @@ int main() {
   (CU_add_test(my_test_suite, "test remove 3", test_has_key_3) == NULL)                        ||
   (CU_add_test(my_test_suite, "test remove 4", test_has_key_4) == NULL)                        ||
   (CU_add_test(my_test_suite, "test remove 5", test_has_key_5) == NULL)                        ||
+  (CU_add_test(my_test_suite, "hash_table_remove_to_empty_test", hash_table_remove_to_empty_test) == NULL)                        ||
   (CU_add_test(my_test_suite, "ITERATOR TEST EMPTY", test_iterator_empty_table) == NULL)                        ||
   (CU_add_test(my_test_suite, "ITERATOR TEST SINGLE", test_iterator_single_table) == NULL)                        ||
   (CU_add_test(my_test_suite, "ITERATOR TEST SEVERAL", test_iterator_several_entries) == NULL)                        ||

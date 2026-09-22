@@ -23,10 +23,11 @@ void test_create_list(void)
   ioopm_list_destroy(list);
 }
 
-void test_add_one_node(void)
+void test_add_one_node_to_empty_list(void)
 {
   ioopm_list_t *list = ioopm_list_create();
   ioopm_list_append(list, 5);
+  CU_ASSERT_EQUAL(ioopm_list_size(list), 1);
   ioopm_list_destroy(list);
 }
 
@@ -86,16 +87,14 @@ void test_get(void)
   ioopm_list_t *list = ioopm_list_create();
   int result = 0;
 
-  // Single-element list: getting index 0
   ioopm_list_append(list, 5);
   CU_ASSERT_TRUE(ioopm_list_get(list, 0, &result));
   CU_ASSERT_EQUAL(result, 5);
 
-  // Grow the list and check head, middle, and last
   ioopm_list_insert(list, 1, 10);
   ioopm_list_insert(list, 2, 15);
   ioopm_list_append(list, 20);
-  // list is now [5, 10, 15, 20]
+  // [5, 10, 15, 20]
 
   CU_ASSERT_TRUE(ioopm_list_get(list, 0, &result));
   CU_ASSERT_EQUAL(result, 5);
@@ -106,7 +105,6 @@ void test_get(void)
   CU_ASSERT_TRUE(ioopm_list_get(list, 3, &result));
   CU_ASSERT_EQUAL(result, 20);
 
-  // Out-of-bounds indices should return false
   CU_ASSERT_FALSE(ioopm_list_get(list, -1, &result));
   CU_ASSERT_FALSE(ioopm_list_get(list, 4, &result));
 
@@ -186,9 +184,9 @@ int main()
   // copy a line below and change the information
   if (
       (CU_add_test(my_test_suite, "A simple create and destroy test", test_create_list) == NULL) ||
-      (CU_add_test(my_test_suite, "test for adding a node and checking size", test_add_one_node) == NULL) ||
+      (CU_add_test(my_test_suite, "test for adding a node and checking size", test_add_one_node_to_empty_list) == NULL) ||
       (CU_add_test(my_test_suite, "test for adding and getting head from list", test_add_and_get_head) == NULL) ||
-      (CU_add_test(my_test_suite, "test for getting head and last from list", test_add_and_get_head) == NULL) ||
+      (CU_add_test(my_test_suite, "test for getting head and last from list", test_head_and_last) == NULL) ||
       (CU_add_test(my_test_suite, "test insert head and last", test_insert) == NULL) ||
       (CU_add_test(my_test_suite, "test remove", test_remove) == NULL) ||
       (CU_add_test(my_test_suite, "test get", test_get) == NULL) ||
