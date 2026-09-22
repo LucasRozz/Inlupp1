@@ -7,12 +7,16 @@
 
 #include "hash_table.h"
 #include "hash_table_iterator.h"
+#include "common.h"
 #define No_Buckets 17
+
+
+
 
 struct entry
 {
-  char *key;     // holds the key
-  int value;     // holds the value
+  elem_t key;     // holds the key
+  elem_t value;     // holds the value
   entry_t *next; // points to the next entry (possibly NULL)
 };
 
@@ -24,6 +28,8 @@ struct hash_table
   // NOTE: addressing this dodge is optional.
   entry_t buckets[No_Buckets];
   size_t size;
+  ioopm_hash_function *hash_fn;
+  ioopm_eq_function *key_eq_fn;
 };
 
 struct hash_table_iterator
@@ -33,9 +39,12 @@ struct hash_table_iterator
   entry_t *current_entry;
 };
 
-ioopm_hash_table_t *ioopm_hash_table_create()
+ioopm_hash_table_t *ioopm_hash_table_create(ioopm_hash_function *hash_fn, ioopm_eq_function *key_eq_fn)
 {
-  return calloc(1, sizeof(ioopm_hash_table_t));
+  ioopm_hash_table_t *new = calloc(1, sizeof(ioopm_hash_table_t));
+  new->hash_fn = hash_fn;
+  new->key_eq_fn = key_eq_fn;
+  return new;
 }
 
 static void entry_destroy(entry_t *entry_remove)
@@ -83,7 +92,7 @@ void ioopm_hash_table_destroy(ioopm_hash_table_t *ht)
 
 // used as an abstraction of the program(mål A!)
 // En null check för att se om det finns plats i heapen
-static entry_t *entry_create(char *key, int value, entry_t *next)
+static entry_t *entry_create(elem_t key, elem_t value, entry_t *next)
 {
   entry_t *new = calloc(sizeof(entry_t), 1);
   new->key = key;
@@ -92,7 +101,7 @@ static entry_t *entry_create(char *key, int value, entry_t *next)
   return new;
 }
 // 1. Brackets lite varierande vart dom sitter för funktionerna
-static size_t string_knr_hash(const char *str)
+/*static size_t string_knr_hash(const char *str)
 {
   size_t result = 0;
   while (*str != '\0')
@@ -101,20 +110,23 @@ static size_t string_knr_hash(const char *str)
     str++;
   }
   return result;
+}*/
+static size_t string_knr_hash(ioopm_hash_table_t *ht, elem_t key){
+  return ht->hash_fn(key);
 }
 
-static entry_t *find_previous_entry(ioopm_hash_table_t *ht, char *key)
+static entry_t *find_previous_entry(ioopm_hash_table_t *ht, elem_t key)
 {
-  size_t bucket = string_knr_hash(key) % No_Buckets;
+  size_t bucket = string_knr_hash(ht, key) % No_Buckets;
   entry_t *previous = &ht->buckets[bucket];
-  while (previous->next != NULL && strcmp(previous->next->key, key) != 0)
+  while (previous->next != NULL && !ht->key_eq_fn(previous->next->key, key))
   {
     previous = previous->next;
   }
   return previous;
 }
 
-void ioopm_hash_table_insert(ioopm_hash_table_t *ht, char *key, int value)
+void ioopm_hash_table_insert(ioopm_hash_table_t *ht, elem_t key, elem_t value)
 {
   // find previous entry, or the last entry if the key does not exist
   entry_t *previous = find_previous_entry(ht, key);
@@ -131,7 +143,7 @@ void ioopm_hash_table_insert(ioopm_hash_table_t *ht, char *key, int value)
   }
 }
 
-bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, char *key, int *result)
+bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, elem_t key, elem_t *result)
 {
   // look for an entry with the key we want
   entry_t *previous = find_previous_entry(ht, key);
@@ -147,7 +159,7 @@ bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, char *key, int *result)
   }
 }
 
-bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result)
+bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, elem_t key, elem_t *result)
 {
   entry_t *previous = find_previous_entry(ht, key);
   entry_t *target = previous->next;
@@ -165,9 +177,9 @@ bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, char *key, int *result)
   }
 }
 
-bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, char *key)
+bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, elem_t key)
 {
-  int result;
+  elem_t result;
   return ioopm_hash_table_lookup(ht, key, &result);
 }
 
@@ -233,12 +245,12 @@ void ioopm_hash_table_iterator_advance(ioopm_hash_table_iterator_t *it)
   skip_sentinel_nodes(it);
 }
 
-char *ioopm_hash_table_iterator_current_key(ioopm_hash_table_iterator_t *it)
+elem_t ioopm_hash_table_iterator_current_key(ioopm_hash_table_iterator_t *it)
 {
   return it->current_entry->key;
 }
 
-int ioopm_hash_table_iterator_current_value(ioopm_hash_table_iterator_t *it)
+elem_t ioopm_hash_table_iterator_current_value(ioopm_hash_table_iterator_t *it)
 {
   return it->current_entry->value;
 }
