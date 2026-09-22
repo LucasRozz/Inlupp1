@@ -10,3 +10,8 @@ itertest: linked_list.c linked_list.h list_iterator.h linked_list_iterator_test.
 memtest_iter: iter_test
 	valgrind --leak-check=full ./iter_test
 
+hash_tests: hash_table.c hash_table.h hash_table_tests.c
+	gcc -g -Wall -Wextra -Wpedantic hash_table.c hash_table_tests.c -o hash_test -lcunit
+
+memtest_hash: 
+	valgrind --leak-check=full ./hash_test
