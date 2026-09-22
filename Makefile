@@ -1,5 +1,5 @@
 tests: linked_list_tests.c linked_list.c linked_list.h
-	gcc -g -Wall -Wextra -Wpedantic linked_list.c linked_list_tests.c -o linked_list_tests -lcunit
+	gcc -g -Wall -fprofile-arcs -ftest-coverage -Wextra -Wpedantic linked_list.c linked_list_tests.c -o linked_list_tests -lcunit
 
 memtest: linked_list_tests
 	valgrind --leak-check=full ./linked_list_tests
@@ -9,3 +9,4 @@ itertest: linked_list.c linked_list.h list_iterator.h linked_list_iterator_test.
 
 memtest_iter: iter_test
 	valgrind --leak-check=full ./iter_test
+

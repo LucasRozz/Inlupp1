@@ -116,7 +116,11 @@ void ioopm_list_insert(ioopm_list_t *list, int index, int value){
     }
     ioopm_list_element_t *new = create_element(value);
 
-    if(index == 0) {
+    if (list->size == 0){
+        list_first_node_create(list, new);
+        return;
+    }
+    else if(index == 0) {
         list_insert_first_node(list, new);
         return;
     }
@@ -181,8 +185,28 @@ bool ioopm_list_get(ioopm_list_t *list, int index, int *result){
     return true;
 }
 
-int ioopm_list_size(ioopm_list_t *list){
+/*int ioopm_list_size(ioopm_list_t *list){
     return list->size;
+}
+*/
+
+//Normal recursive
+int list_size_recursive(ioopm_list_element_t *element){
+    if(element == NULL){
+        return 0;
+    }
+    return 1 + (list_size_recursive(element->tail));
+}
+
+//Tail recursive
+static int list_length_recursive(ioopm_list_element_t *element, int index){
+    if(element == NULL){
+        return index;
+    }
+    return list_length_recursive(element->tail, index + 1);
+}
+int ioopm_list_size(ioopm_list_t *list){
+    return list_length_recursive(list->first, 0);
 }
 
 bool ioopm_list_is_empty(ioopm_list_t *list){
@@ -194,7 +218,7 @@ bool ioopm_list_is_empty(ioopm_list_t *list){
 ioopm_list_iterator_t *ioopm_list_iterator_create(ioopm_list_t *l){
     ioopm_list_iterator_t *iter = calloc(sizeof(ioopm_list_iterator_t), 1);
     iter->list = l;
-    iter->index = 0;    
+    iter->index = 0;  
     if(iter->list->size == 0){
         iter->current_element = NULL;
         return iter;
@@ -207,8 +231,9 @@ void ioopm_list_iterator_destroy(ioopm_list_iterator_t *iter){
     free(iter);
 }
 
+//changed so it returns true if we are at the end of the list, not if there are elements left
 bool ioopm_list_iterator_at_end(ioopm_list_iterator_t *iter){
-    return iter->current_element != NULL ? true : false;
+    return iter->current_element == NULL;
 }
 
 void ioopm_list_iterator_advance(ioopm_list_iterator_t *iter){
@@ -221,9 +246,27 @@ int ioopm_list_iterator_current(ioopm_list_iterator_t *iter){
     return iter->current_element->value;
 }
 
-int ioopm_list_iterator_remove(ioopm_list_iterator_t *iter){
-    int removed;
-    ioopm_list_remove(iter->list, iter->index, &removed);
-    return removed;
+bool ioopm_list_iterator_remove(ioopm_list_iterator_t *iter, int *removed){
+    ioopm_list_element_t *to_remove = iter->current_element;
+    if(to_remove == NULL){
+        return false;
+    }
+
+    ioopm_list_element_t *next = to_remove->tail;
+    if(ioopm_list_remove(iter->list, iter->index, removed)){
+        iter->current_element = next;
+        return true;
+    }
+    return false;
 }
 
+void ioopm_list_iterator_insert(ioopm_list_iterator_t *iter, int element){
+    ioopm_list_insert(iter->list, iter->index, element);
+
+    if(iter->index == 0){
+        iter->current_element = iter->list->first;
+    } else {
+        ioopm_list_element_t *previous = find_previous_node(iter->list, iter->index);
+        iter->current_element = previous->tail;
+    }
+}

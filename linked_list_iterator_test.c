@@ -53,7 +53,7 @@ void test_iterator_create_on_empty_list(void){
     ioopm_list_iterator_t *iter = ioopm_list_iterator_create(list);
 
     // No elements exist yet, so there should be nothing to give
-    CU_ASSERT_FALSE(ioopm_list_iterator_at_end(iter));
+    CU_ASSERT_TRUE(ioopm_list_iterator_at_end(iter));
 
     ioopm_list_iterator_destroy(iter);
     ioopm_list_destroy(list);
@@ -65,12 +65,12 @@ void test_iterator_single_element(void){
 
     ioopm_list_iterator_t *iter = ioopm_list_iterator_create(list);
 
-    CU_ASSERT_TRUE(ioopm_list_iterator_at_end(iter));
+    CU_ASSERT_FALSE(ioopm_list_iterator_at_end(iter));
     CU_ASSERT_EQUAL(ioopm_list_iterator_current(iter), 42);
 
     ioopm_list_iterator_advance(iter);
     // Past the only element now
-    CU_ASSERT_FALSE(ioopm_list_iterator_at_end(iter));
+    CU_ASSERT_TRUE(ioopm_list_iterator_at_end(iter));
 
     ioopm_list_iterator_destroy(iter);
     ioopm_list_destroy(list);
@@ -87,13 +87,13 @@ void test_iterator_full_traversal(void){
 
     int expected[] = {1, 2, 3, 4};
     for(int i = 0; i < 4; i++){
-        CU_ASSERT_TRUE(ioopm_list_iterator_at_end(iter));
+        CU_ASSERT_FALSE(ioopm_list_iterator_at_end(iter));
         CU_ASSERT_EQUAL(ioopm_list_iterator_current(iter), expected[i]);
         ioopm_list_iterator_advance(iter);
     }
 
     // We've now advanced past the last element
-    CU_ASSERT_FALSE(ioopm_list_iterator_at_end(iter));
+    CU_ASSERT_TRUE(ioopm_list_iterator_at_end(iter));
 
     ioopm_list_iterator_destroy(iter);
     ioopm_list_destroy(list);
@@ -104,7 +104,7 @@ void test_iterator_full_traversal(void){
 static int count_with_iterator(ioopm_list_t *list){
     int count = 0;
     ioopm_list_iterator_t *iter = ioopm_list_iterator_create(list);
-    while(ioopm_list_iterator_at_end(iter)){
+    while(!ioopm_list_iterator_at_end(iter)){
         count++;
         ioopm_list_iterator_advance(iter);
     }
@@ -135,7 +135,7 @@ void test_iterator_matches_get(void){
 
     ioopm_list_iterator_t *iter = ioopm_list_iterator_create(list);
     int index = 0;
-    while(ioopm_list_iterator_at_end(iter)){
+    while(!ioopm_list_iterator_at_end(iter)){
         int expected;
         CU_ASSERT_TRUE(ioopm_list_get(list, index, &expected));
         CU_ASSERT_EQUAL(ioopm_list_iterator_current(iter), expected);
@@ -148,6 +148,42 @@ void test_iterator_matches_get(void){
     ioopm_list_destroy(list);
 }
 
+void iterator_remove_test(void){
+    ioopm_list_t *list = ioopm_list_create();
+    ioopm_list_append(list, 5);
+    ioopm_list_append(list, 15);
+    ioopm_list_append(list, 25);
+    int result;
+
+    ioopm_list_iterator_t *iter = ioopm_list_iterator_create(list);
+    ioopm_list_iterator_advance(iter);
+    CU_ASSERT_TRUE(ioopm_list_iterator_remove(iter, &result));
+    CU_ASSERT_EQUAL(result, 15);
+    CU_ASSERT_EQUAL(ioopm_list_iterator_current(iter), 25);
+    ioopm_list_iterator_advance(iter);
+    CU_ASSERT_TRUE(ioopm_list_iterator_at_end(iter));
+
+    ioopm_list_iterator_destroy(iter);
+    ioopm_list_destroy(list);
+}
+
+
+void iterator_insert_test(void){
+    ioopm_list_t *list = ioopm_list_create();
+    
+    ioopm_list_iterator_t *iter = ioopm_list_iterator_create(list);
+    ioopm_list_iterator_insert(iter, 1);
+    CU_ASSERT_EQUAL(ioopm_list_iterator_current(iter), 1);
+    ioopm_list_iterator_insert(iter, 2);
+    ioopm_list_iterator_insert(iter, 3);
+
+    ioopm_list_iterator_advance(iter);
+    CU_ASSERT_EQUAL(ioopm_list_iterator_current(iter), 2);
+
+
+    ioopm_list_iterator_destroy(iter);
+    ioopm_list_destroy(list);
+}
 
 int main()
 {
@@ -178,6 +214,8 @@ int main()
       (CU_add_test(my_test_suite, "test_iterator_full_traversal", test_iterator_full_traversal) == NULL) ||
       (CU_add_test(my_test_suite, "test_iterator_reimplements_size", test_iterator_reimplements_size) == NULL) ||
       (CU_add_test(my_test_suite, "test_iterator_matches_get", test_iterator_matches_get) == NULL) ||
+      (CU_add_test(my_test_suite, "iterator_remove_test", iterator_remove_test) == NULL) ||
+      (CU_add_test(my_test_suite, "iterator_insert_test", iterator_insert_test) == NULL) ||
       0)
   {
     // If adding any of the tests fails, we tear down CUnit and exit

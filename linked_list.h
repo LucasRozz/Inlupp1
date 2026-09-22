@@ -55,7 +55,7 @@ bool ioopm_list_remove(ioopm_list_t *list, int index, int *result);
 /// The valid values of index are [0,n-1] for a list of n elements,
 /// where 0 means the first element and n-1 means the last element.
 /// @pre 0 <= index < length(list)
-/// @param list the linked list that will be extended
+/// @param list the linked list that will be extended   
 /// @param index the position in the list
 /// @return the value at the given position
 bool ioopm_list_get(ioopm_list_t *list, int index, int *result);
