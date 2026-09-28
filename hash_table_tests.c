@@ -17,16 +17,6 @@ int clean_suite(void) {
   return 0;
 }
 
-// These are example test functions. You should replace them with
-// functions of your own.
-void test1(void) {
-  CU_ASSERT(42);
-}
-
-void test2(void) {
-  CU_ASSERT_EQUAL(1 + 1, 2);
-}
-
 static bool eq_function(elem_t a, elem_t b){
   return strcmp(a.s, b.s) == 0;
 }

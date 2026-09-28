@@ -10,18 +10,14 @@
 #include "common.h"
 #define No_Buckets 17
 
-
-
-
 struct entry
 {
-  elem_t key;     // holds the key
-  elem_t value;     // holds the value
+  elem_t key;    // holds the key
+  elem_t value;  // holds the value
   entry_t *next; // points to the next entry (possibly NULL)
 };
 
 // Check for achievements (M39) and (O44) for using double pointers
-
 struct hash_table
 {
   // DODGE: hard-coding number of buckets as 17.
@@ -52,7 +48,6 @@ static void entry_destroy(entry_t *entry_remove)
   free(entry_remove);
 }
 
-// M39 and O44 goal
 static void iter_remove_all_entry(entry_t *entry_to_remove)
 {
   entry_t *current = entry_to_remove;
@@ -63,7 +58,7 @@ static void iter_remove_all_entry(entry_t *entry_to_remove)
     current = next;
   }
 }
-// 2. Typ död kod, men existerar för ett redovisningssyfte wallah
+
 /*static void recursive_remove_all_entry(entry_t *entry_to_remove)
 {
   if (entry_to_remove == NULL)
@@ -90,8 +85,6 @@ void ioopm_hash_table_destroy(ioopm_hash_table_t *ht)
   return;
 }
 
-// used as an abstraction of the program(mål A!)
-// En null check för att se om det finns plats i heapen
 static entry_t *entry_create(elem_t key, elem_t value, entry_t *next)
 {
   entry_t *new = calloc(sizeof(entry_t), 1);
@@ -100,7 +93,7 @@ static entry_t *entry_create(elem_t key, elem_t value, entry_t *next)
   new->next = next;
   return new;
 }
-// 1. Brackets lite varierande vart dom sitter för funktionerna
+
 /*static size_t string_knr_hash(const char *str)
 {
   size_t result = 0;
@@ -111,13 +104,15 @@ static entry_t *entry_create(elem_t key, elem_t value, entry_t *next)
   }
   return result;
 }*/
-static size_t string_knr_hash(ioopm_hash_table_t *ht, elem_t key){
+
+static size_t hash_function(ioopm_hash_table_t *ht, elem_t key)
+{
   return ht->hash_fn(key);
 }
 
 static entry_t *find_previous_entry(ioopm_hash_table_t *ht, elem_t key)
 {
-  size_t bucket = string_knr_hash(ht, key) % No_Buckets;
+  size_t bucket = hash_function(ht, key) % No_Buckets;
   entry_t *previous = &ht->buckets[bucket];
   while (previous->next != NULL && !ht->key_eq_fn(previous->next->key, key))
   {
@@ -128,12 +123,10 @@ static entry_t *find_previous_entry(ioopm_hash_table_t *ht, elem_t key)
 
 void ioopm_hash_table_insert(ioopm_hash_table_t *ht, elem_t key, elem_t value)
 {
-  // find previous entry, or the last entry if the key does not exist
   entry_t *previous = find_previous_entry(ht, key);
 
-  // if the key exists, update the value, otherwise create a new entry
   if (previous->next != NULL)
-  { // 3. Kanske skapa funktion för just detta
+  {
     previous->next->value = value;
   }
   else
