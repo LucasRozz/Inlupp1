@@ -72,7 +72,44 @@
         
         To obtain coverage from the tests we used gcov.
 
+# Initial Profiling Results
 
+    For each input, what are the top 3 functions?
+    small.txt
+        cmp_freq_words
+        hash_function
+        eq_function
+    1k words
+        eq_function
+        hash_function
+        process_word
+    10k words
+        eq_function
+        hash_function
+        process_word
+    16k words
+        eq_function_init
+        hash_function
+        cmp_freq_words
+    
+    This data was obtained using th gmon extension, to run it:   
+        gprof options "file to run" gmon.out > "outfile"
 
+    For each input, are the top 3 functions in your code (that you have written), or is it in library functions?
+        Its only our functions in the top 3 most used.
+    
+    Are the top 3 functions in your code consistent across the inputs? Why? Why not?
+        Functions like hash_function is consistent since every words needs to hash into their respective bucket no matter the frequency of the word. When a new word needs to be put in the table, it gets hashed 3 times and an already existing key gets hashed 2 times. This means that hash will get called more than process_word.
+        Eq_function is consistently one of the most called functions, this is since we always need to compare the words when they're processed to compare to current keys in the hash table. This is repeated a lot when we have long linked list to iterate over.
+        A function that differs across the inputs is the cmp_freq_words function which gets called more in the txt file with 16k words and the small.txt. In the small file, all words are different which means that when comparing the frequency, we have more words to compare. In the 16k file, we simply have more words to compare.
+        Process_word gets called often in 1k and 10k files since every word needs to get processed, since we have words with higher frequency in these files, we dont need to compare the frequency that many times.
 
+    Is there some kind of trend? (Possibly several)
+        Textfiles with high frequency words will not call compare_freq_words as often and likewise hash_function will need to hach more if there are more low frequency words. Eq_function gets called the most times in every file except small, this is because the linked lists get quite long and for every comparison eq_function gets called. The small file doesn't have enough words for this to happen.
+        
+    Do the results correspond with your expectations?
+        No, we expected process_words to be prominent and we didn't think eq_function would get called so many times. We realized that hash_function would get called often since we always need to hash the keys but we didn't think about the lengths of the linked lists and the amount of comparisons needed.
+    
+    Based on these results, do you see a way to make your program go faster?
+        Yes, we need to improve the amount of buckets or making the amount dynamic so the linked lists get shorter and we don't need to check for equal as many times.
     
