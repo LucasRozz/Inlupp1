@@ -343,6 +343,27 @@ void test_iterator_several_entries()
   CU_ASSERT_EQUAL(iteration_count, 3);
 }
 
+void void_pointer_test(void){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
+  ioopm_hash_table_t *ht2 = ioopm_hash_table_create(hash_function, eq_function);
+  ioopm_hash_table_t *ht3 = ioopm_hash_table_create(hash_function, eq_function);
+
+  void *key = ht2 ;
+  void *value = "200";
+  void *value2 = "10";
+
+  elem_t result;
+
+  ioopm_hash_table_insert(ht, ptr_elem(key), ptr_elem(value));
+  ioopm_hash_table_insert(ht, ptr_elem(ht3), ptr_elem(value2));
+
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, ptr_elem(key), &result));
+  CU_ASSERT_EQUAL(result.p, "10");
+  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, ptr_elem(ht3), &result));
+
+  ioopm_hash_table_destroy(ht);
+  ioopm_hash_table_destroy(ht2);
+}
 
 int main() {
   // First we try to set up CUnit, and exit if we fail
@@ -378,6 +399,7 @@ int main() {
   (CU_add_test(my_test_suite, "ITERATOR TEST EMPTY", test_iterator_empty_table) == NULL)                        ||
   (CU_add_test(my_test_suite, "ITERATOR TEST SINGLE", test_iterator_single_table) == NULL)                        ||
   (CU_add_test(my_test_suite, "ITERATOR TEST SEVERAL", test_iterator_several_entries) == NULL)                        ||
+  (CU_add_test(my_test_suite, "void_pointer_test", void_pointer_test) == NULL)                        ||
   0
   )
     {

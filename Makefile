@@ -1,18 +1,27 @@
 CFLAGS = -g -Wall -Wextra -Wpedantic
 COV = --coverage
 
-.PHONY: all memtest_linked_list memtest_iter memtest_hash_table
+.PHONY: all memtest_linked_list memtest_iter memtest_hash_table clean coverage_all coverage_linked_list_tests coverage_iter_test coverage_hash_table_testS
 
 all:linked_list_tests iter_tests hash_table_tests
 
-linked_list_tests: linked_list_tests.c linked_list.c linked_list.h common.h
-	gcc $(CFLAGS) $(COV) linked_list.c linked_list_tests.c -o $@ -lcunit
+linked_list.o:               linked_list.h list_iterator.h common.h
+hash_table.o:                hash_table.h hash_table_iterator.h common.h
+linked_list_tests.o:         linked_list.h common.h
+linked_list_iterator_test.o: linked_list.h list_iterator.h common.h
+hash_table_tests.o:          hash_table.h hash_table_iterator.h common.h
 
-iter_tests: linked_list.c linked_list.h list_iterator.h linked_list_iterator_test.c
-	gcc $(CFLAGS) $(COV) linked_list.c linked_list_iterator_test.c -o $@ -lcunit
+freq_count: freq_count.c hash_table.o
+	gcc $(CFLAGS) $^ -o $@ -pg
 
-hash_table_tests: hash_table.c hash_table.h hash_table_tests.c common.h hash_table_iterator.h 
-	gcc $(CFLAGS) $(COV) hash_table.c hash_table_tests.c -o $@ -lcunit
+linked_list_tests: linked_list_tests.o linked_list.o
+	gcc $(CFLAGS) $(COV) $^ -o $@ -lcunit
+
+iter_tests: linked_list.o linked_list_iterator_test.o
+	gcc $(CFLAGS) $(COV) $^ -o $@ -lcunit
+
+hash_table_tests: hash_table.o hash_table_tests.o
+	gcc $(CFLAGS) $(COV) $^ -o $@ -lcunit
 
 memtest_linked_list: linked_list_tests
 	valgrind --leak-check=full ./linked_list_tests
@@ -23,7 +32,7 @@ memtest_iter: iter_tests
 memtest_hash_table: hash_table_tests
 	valgrind --leak-check=full ./hash_table_tests
 
-.PHONY: clean coverage_all coverage_linked_list_tests coverage_iter_test coverage_hash_table_test
+.PHONY: 
 
 coverage_all: coverage_linked_list_tests coverage_iter_tests coverage_hash_table_tests
 

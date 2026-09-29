@@ -167,6 +167,9 @@ void test_empty_list()
 
   ioopm_list_destroy(list);
 }
+
+
+
 int main()
 {
   // First we try to set up CUnit, and exit if we fail
