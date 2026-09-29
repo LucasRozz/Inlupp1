@@ -10,6 +10,7 @@ hash_table.o:                hash_table.h hash_table_iterator.h common.h
 linked_list_tests.o:         linked_list.h common.h
 linked_list_iterator_test.o: linked_list.h list_iterator.h common.h
 hash_table_tests.o:          hash_table.h hash_table_iterator.h common.h
+hash_table_dynamic.o:		 hash_table.h hash_table_iterator.h common.h
 
 freq_count: freq_count.c hash_table.o
 	gcc $(CFLAGS) $^ -o $@ -pg
@@ -21,6 +22,9 @@ iter_tests: linked_list.o linked_list_iterator_test.o
 	gcc $(CFLAGS) $(COV) $^ -o $@ -lcunit
 
 hash_table_tests: hash_table.o hash_table_tests.o
+	gcc $(CFLAGS) $(COV) $^ -o $@ -lcunit
+
+hash_table_dynamic_tests: hash_table_dynamic.o hash_table_tests.o
 	gcc $(CFLAGS) $(COV) $^ -o $@ -lcunit
 
 memtest_linked_list: linked_list_tests
@@ -49,4 +53,4 @@ coverage_hash_table_tests: hash_table_tests
 	gcov -b hash_table_tests-hash_table.gcno
 
 clean:
-	rm -f *.o *.gcno *.gcda *.gcov linked_list_tests iter_tests hash_table_tests freq_count a.out
+	rm -f *.o *.gcno *.gcda *.gcov linked_list_tests iter_tests hash_table_tests freq_count a.out gmon.out
