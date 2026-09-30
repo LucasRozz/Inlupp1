@@ -148,7 +148,7 @@ void ioopm_hash_table_insert(ioopm_hash_table_t *ht, elem_t key, elem_t value_2_
     (*previous)->next = entry_create(key, value_2_insert, NULL);
     ht->size += 1;
   }
-  if(ht->size)/size_t
+  if((ht->size)/size_t)
 }
 
 bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, elem_t key, elem_t *result)
