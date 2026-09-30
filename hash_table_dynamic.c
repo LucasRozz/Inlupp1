@@ -21,11 +21,11 @@ struct entry
 struct hash_table
 {
   size_t size;
-  size_t buckets_amount;
+  size_t capacity;
   ioopm_hash_function *hash_fn;
   ioopm_eq_function *key_eq_fn;
   entry_t **buckets;
-  float load;
+  double load;
 };
 
 size_t primes[] = {17, 31, 67, 127, 257, 509, 1021, 2053, 4099, 8191, 16381};
@@ -39,12 +39,11 @@ struct hash_table_iterator
 
 ioopm_hash_table_t *ioopm_hash_table_create(ioopm_hash_function *hash_fn, ioopm_eq_function *key_eq_fn)
 {
-  ioopm_hash_table_t *new = calloc(1, sizeof(ioopm_hash_table_t));
+  ioopm_hash_table_t *new = calloc(1, primes[0]);
   new->hash_fn = hash_fn;
   new->key_eq_fn = key_eq_fn;
   return new;
 }
-
 
 
 static void entry_destroy(entry_t *entry_remove)
@@ -82,7 +81,7 @@ void ioopm_hash_table_destroy(ioopm_hash_table_t *ht)
 {
   for (size_t i = 0; i < No_Buckets; i++)
   {
-    entry_t *entry_to_remove = ht->(buckets[i]).next;
+    entry_t *entry_to_remove = ht->(buckets[i]).next;     //tror de är sentinel nod grej med .next
     iter_remove_all_entry(entry_to_remove);
   }
   free(ht);
@@ -126,7 +125,7 @@ static size_t hash_function(ioopm_hash_table_t *ht, elem_t key)
 }*/
 
 static entry_t **find_previous_entry(ioopm_hash_table_t *ht, elem_t key){
-  size_t bucket = ht->hash_fn(key) % ht->buckets_amount;
+  size_t bucket = ht->hash_fn(key) % ht->capacity;
   entry_t **previous = &ht->buckets[bucket];
   if(*previous != NULL && !ht->key_eq_fn((*previous)->next->key, key)){
     previous = &(*previous)->next;
@@ -134,21 +133,38 @@ static entry_t **find_previous_entry(ioopm_hash_table_t *ht, elem_t key){
   return previous;
 }
 
+void bigger_hashtable(ioopm_hash_table_t *ht)
+{
+  
+
+  //skala upp och rehasha
+}
+
+
+void smaller_hashtable(ioopm_hash_table_t *ht)
+{
+  //stubb
+
+  //skala ner och rehasha
+}
+
 
 void ioopm_hash_table_insert(ioopm_hash_table_t *ht, elem_t key, elem_t value_2_insert)
 {
   entry_t **previous = find_previous_entry(ht, key);
 
-  if ((*previous)->next != NULL)
+  if ((*previous) != NULL)  
   {
-    (*previous)->next->value = value_2_insert;
+    (*previous)->value = value_2_insert;
+    return;
   }
-  else
-  {
-    (*previous)->next = entry_create(key, value_2_insert, NULL);
-    ht->size += 1;
-  }
-  if(ht->size)/size_t
+    if((double)ht->size + 1 / ht->capacity > ht->load)
+    {
+      bigger_hashtable(ht);
+      previous = find_previous_entry(ht, key);
+    }
+    *previous = entry_create(key, value_2_insert, NULL);
+    ht->size ++;
 }
 
 bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, elem_t key, elem_t *result)
