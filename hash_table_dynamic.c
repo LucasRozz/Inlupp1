@@ -51,7 +51,7 @@ static void entry_destroy(entry_t *entry_remove)
   free(entry_remove);
 }
 
-static void iter_remove_all_entry(entry_t *entry_to_remove)
+static void iter_remove_all_entry(entry_t **entry_to_remove)
 {
   entry_t *current = entry_to_remove;
   while (current != NULL)
@@ -81,7 +81,7 @@ void ioopm_hash_table_destroy(ioopm_hash_table_t *ht)
 {
   for (size_t i = 0; i < No_Buckets; i++)
   {
-    entry_t *entry_to_remove = ht->(buckets[i]).next;     //tror de är sentinel nod grej med .next
+    entry_t **entry_to_remove = ht->buckets[i];     //tror de är sentinel nod grej med .next
     iter_remove_all_entry(entry_to_remove);
   }
   free(ht);
