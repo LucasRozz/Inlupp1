@@ -1,16 +1,15 @@
 Flat profile:
 
 Each sample counts as 0.01 seconds.
- no time accumulated
-
   %   cumulative   self              self     total           
  time   seconds   seconds    calls  Ts/call  Ts/call  name    
-  0.00      0.00     0.00    52746     0.00     0.00  hash_function
-  0.00      0.00     0.00    52020     0.00     0.00  eq_function
-  0.00      0.00     0.00    35971     0.00     0.00  cmp_freq_words
-  0.00      0.00     0.00    16992     0.00     0.00  process_word
-  0.00      0.00     0.00        1     0.00     0.00  process_file
-  0.00      0.00     0.00        1     0.00     0.00  sort_freq_words
+100.00      0.01     0.01                             hash_function
+  0.00      0.01     0.00    52746     0.00     0.00  hash_function
+  0.00      0.01     0.00    52020     0.00     0.00  eq_function
+  0.00      0.01     0.00    35971     0.00     0.00  cmp_freq_words
+  0.00      0.01     0.00    16992     0.00     0.00  process_word
+  0.00      0.01     0.00        1     0.00     0.00  process_file
+  0.00      0.01     0.00        1     0.00     0.00  sort_freq_words
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -48,28 +47,32 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 4 byte(s) no time propagated
+granularity: each sample hit covers 4 byte(s) for 100.00% of 0.01 seconds
 
 index % time    self  children    called     name
+                                                 <spontaneous>
+[1]    100.0    0.01    0.00                 hash_function [1]
+                0.00    0.00   46606/52746       hash_function [2]
+-----------------------------------------------
                 0.00    0.00    6140/52746       scale_and_rehash [35]
-                0.00    0.00   46606/52746       hash_function [16]
-[1]      0.0    0.00    0.00   52746         hash_function [1]
+                0.00    0.00   46606/52746       hash_function [1]
+[2]      0.0    0.00    0.00   52746         hash_function [2]
 -----------------------------------------------
-                0.00    0.00   52020/52020       find_previous_entry [14]
-[2]      0.0    0.00    0.00   52020         eq_function [2]
+                0.00    0.00   52020/52020       find_previous_entry [15]
+[3]      0.0    0.00    0.00   52020         eq_function [3]
 -----------------------------------------------
-                0.00    0.00   35971/35971       cmp_freq_words_reverse [8]
-[3]      0.0    0.00    0.00   35971         cmp_freq_words [3]
+                0.00    0.00   35971/35971       cmp_freq_words_reverse [9]
+[4]      0.0    0.00    0.00   35971         cmp_freq_words [4]
 -----------------------------------------------
-                0.00    0.00   16992/16992       process_file [5]
-[4]      0.0    0.00    0.00   16992         process_word [4]
------------------------------------------------
-                0.00    0.00       1/1           main [33]
-[5]      0.0    0.00    0.00       1         process_file [5]
-                0.00    0.00   16992/16992       process_word [4]
+                0.00    0.00   16992/16992       process_file [6]
+[5]      0.0    0.00    0.00   16992         process_word [5]
 -----------------------------------------------
                 0.00    0.00       1/1           main [33]
-[6]      0.0    0.00    0.00       1         sort_freq_words [6]
+[6]      0.0    0.00    0.00       1         process_file [6]
+                0.00    0.00   16992/16992       process_word [5]
+-----------------------------------------------
+                0.00    0.00       1/1           main [33]
+[7]      0.0    0.00    0.00       1         sort_freq_words [7]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -162,5 +165,6 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [3] cmp_freq_words (freq_count.c) [1] hash_function (freq_count.c) [4] process_word
-   [2] eq_function (freq_count.c) [5] process_file         [6] sort_freq_words
+   [4] cmp_freq_words (freq_count.c) [2] hash_function (freq_count.c) [7] sort_freq_words
+   [3] eq_function (freq_count.c) [6] process_file
+   [1] hash_function (hash_table_dynamic.c) [5] process_word

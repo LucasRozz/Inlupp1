@@ -47,26 +47,41 @@ coverage_hash_table_tests: hash_table_tests
 	./hash_table_tests
 	gcov -b hash_table_tests-hash_table.gcno
 
-freq_count_profile: hash_table.o freq_count.c
-	gcc $(CFLAGS) $^ -o freq_count_profile -pg
+freq_count_compiled: hash_table.o freq_count.c
+	gcc $(CFLAGS) $^ -o $@ -pg
+
+freq_count_memory: hash_table.o freq_count.c
+	gcc $(CFLAGS) $^ -o $@ 
 
 all_profiles: profile_1k profile_10k profile_16k profile_small
 
-profile_1k: freq_count_profile
-	./freq_count_profile Words/1k-long-words.txt
-	gprof ./freq_count_profile gmon.out > Profiles/1k_test.txt
+profile_1k: freq_count_compiled
+	./freq_count_compiled Words/1k-long-words.txt
+	gprof ./freq_count_compiled gmon.out > Profiles/1k_test.txt
 
-profile_10k: freq_count_profile
-	./freq_count_profile Words/10k-words.txt
-	gprof ./freq_count_profile gmon.out > Profiles/10k_test.txt
+profile_10k: freq_count_compiled
+	./freq_count_compiled Words/10k-words.txt
+	gprof ./freq_count_compiled gmon.out > Profiles/10k_test.txt
 	
-profile_16k: freq_count_profile
-	./freq_count_profile Words/16k-words.txt
-	gprof ./freq_count_profile gmon.out > Profiles/16k_test.txt
+profile_16k: freq_count_compiled
+	./freq_count_compiled Words/16k-words.txt
+	gprof ./freq_count_compiled gmon.out > Profiles/16k_test.txt
 
-profile_small: freq_count_profile
-	./freq_count_profile Words/small.txt
-	gprof ./freq_count_profile gmon.out > Profiles/small.txt
+profile_small: freq_count_compiled
+	./freq_count_compiled Words/small.txt
+	gprof ./freq_count_compiled gmon.out > Profiles/small.txt
+
+memory_usage_1k: freq_count_memory
+	valgrind --tool=massif ./freq_count_memory Words/1k-long-words.txt
+
+memory_usage_10k: freq_count_memory
+	valgrind --tool=massif ./freq_count_memory Words/10k-words.txt
+
+memory_usage_16k: freq_count_memory
+	valgrind --tool=massif ./freq_count_memory Words/16k-words.txt
+
+memory_usage_small: freq_count_memory
+	valgrind --tool=massif ./freq_count_memory Words/small.txt
 
 clean:
-	rm -f *.o *.gcno *.gcda *.gcov linked_list_tests iter_tests hash_table_tests freq_count a.out gmon.out freq_count_profile
+	rm -f *.o *.gcno *.gcda *.gcov linked_list_tests iter_tests hash_table_tests freq_count a.out gmon.out freq_count_compiled massif.*

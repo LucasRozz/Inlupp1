@@ -21,5 +21,5 @@ union elem
     bool b;
     float f;
     void *p;
-    char *s;
+    void *s;
 };

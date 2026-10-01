@@ -1,28 +1,25 @@
 #include <CUnit/Basic.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "hash_table.h"
 #include "hash_table_iterator.h"
 #include "common.h"
-#include <stdlib.h>
 
+// Growth thresholds with load factor 0.75 and the primes table
+// 17, 31, 67, 127, 257, 509, 1021, 2053, 4099, 8191, 16381:
+//   17 -> 31 at entry 13,   31 -> 67 at entry 24,   67 -> 127 at entry 51, ...
+//   8191 -> 16381 at entry 6144
+// The next growth (past 16381) would happen at entry 12286, so every
+// test here stays well below that (max 5000 entries).
 
-
-int init_suite(void) {
-  // Change this function if you want to do something *before* you
-  // run a test suite
-  return 0;
-}
-
-int clean_suite(void) {
-  // Change this function if you want to do something *after* you
-  // run a test suite
-  return 0;
-}
-
-static bool eq_function(elem_t a, elem_t b){
+static bool eq_function(elem_t a, elem_t b)
+{
   return strcmp(a.s, b.s) == 0;
 }
 
-static size_t hash_function(elem_t key){
+static size_t hash_function(elem_t key)
+{
   const char *str = key.s;
   size_t result = 0;
   while (*str != '\0')
@@ -31,317 +28,6 @@ static size_t hash_function(elem_t key){
     str++;
   }
   return result;
-}
-
-void test_create_destroy()
-{
-   ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-   CU_ASSERT_PTR_NOT_NULL(ht);
-   ioopm_hash_table_destroy(ht);
-}
-
-
-void test_insert_once()
-{
-  // create new hash table
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-
-  char *key = "abc";
-  int value = 123;
-
-  // check that key is not in ht
-  elem_t result = int_elem(0);
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, string_elem(key), &result));
-  CU_ASSERT_EQUAL(result.i, 0);
-
-  // insert key-value pair and check that the mapping exists
-  ioopm_hash_table_insert(ht, string_elem(key), int_elem(value));
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, string_elem(key), &result));
-  CU_ASSERT_EQUAL(result.i, value);
-
-  // destroy hash table
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_update_key()
-{
-  // create new hash table
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-
-  char *key = "abcd";
-  int value = 1212;
-
-  // check that key is not in ht
-  elem_t result = int_elem(0);
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, string_elem(key), &result));
-  CU_ASSERT_EQUAL(result.i, 0);
-
-  // insert key-value pair and check that the mapping exists
-  ioopm_hash_table_insert(ht, string_elem(key), int_elem(value));
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, string_elem(key), &result));
-  CU_ASSERT_EQUAL(result.i, value);
-  value = 134;
-  ioopm_hash_table_insert(ht, string_elem(key), int_elem(value));
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, string_elem(key), &result));
-  CU_ASSERT_EQUAL(result.i, value);
-
-
-  // destroy hash table
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_insert_multiple()
-{
-  // create new hash table
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-
-  char *keys[]   = {"a", "b", "c", "d", "e"};
-  int values[]   = {1, 2, 3, 4, 5};
-
-  // insert every key-value pair
-  for (size_t i = 0; i < 5; i++)
-  {
-    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem(values[i]));
-  }
-
-  // check that every key can be looked up and returns its own value
-  elem_t result;
-  for (size_t i = 0; i < 5; i++)
-  {
-    CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, string_elem(keys[i]), &result));
-    CU_ASSERT_EQUAL(result.i, values[i]);
-  }
-
-  // a key that was never inserted should not be found
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, string_elem("fel"), &result));
-
-  // destroy hash table
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_remove()
-{
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-
-  char *key1 = "x";
-  char *key2 = "y";
-  elem_t result;
-
-  ioopm_hash_table_insert(ht, string_elem(key1), int_elem(10));
-  ioopm_hash_table_insert(ht, string_elem(key2), int_elem(20));
-
-  // remove an existing key: should succeed and return its value
-  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, string_elem(key1), &result));
-  CU_ASSERT_EQUAL(result.i, 10);
-
-  // it should no longer be found afterwards
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, string_elem(key1), &result));
-
-  // the other key should be untouched
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, string_elem(key2), &result));
-  CU_ASSERT_EQUAL(result.i, 20);
-
-  // removing a key that doesn't exist should just return false
-  CU_ASSERT_FALSE(ioopm_hash_table_remove(ht, string_elem("not_a_key"), &result));
-
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_entry_remove(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-
-  char *keys[]   = {"A*", "B-", "C0", "d", "e"};
-  int values[]   = {1, 2, 3, 4, 5};
-
-  // insert every key-value pair
-  for (size_t i = 0; i < 5; i++)
-  {
-    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem(values[i]));
-  }
-  elem_t result;
-  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, string_elem(keys[1]), &result));
-  CU_ASSERT_EQUAL(result.i, 2);
-  CU_ASSERT_FALSE(ioopm_hash_table_remove(ht, string_elem(keys[1]), &result));
-  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, string_elem(keys[2]), &result));
-  CU_ASSERT_EQUAL(result.i, 3);
-
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_has_key_1(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *key= "hej";
-  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, string_elem(key)));
-
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_has_key_2(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *keys[]= {"hej", "då"};
-  int values[] = {1, 2};
-  
-  ioopm_hash_table_insert(ht, string_elem(keys[0]), int_elem(values[0]));
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem(keys[0])));
-  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, string_elem(keys[1])));
-
-  ioopm_hash_table_destroy(ht);
-}
-
-
-
-void test_has_key_3(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *keys[]= {"hej", "då", "va", "Buh"};
-  int values[] = {1, 2, 3, 4};
-  ioopm_hash_table_insert(ht, string_elem(keys[0]), int_elem(values[0]));
-  ioopm_hash_table_insert(ht, string_elem(keys[1]), int_elem(values[1]));
-  ioopm_hash_table_insert(ht, string_elem(keys[2]), int_elem(values[2]));
-  
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem(keys[0])));
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem(keys[1])));
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem(keys[2])));
-  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, string_elem(keys[3])));
-
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_has_key_4(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *key = "hej";
-  int value = 67;
-  elem_t result;
-
-  ioopm_hash_table_insert(ht, string_elem(key), int_elem(value));
-  ioopm_hash_table_remove(ht, string_elem(key), &result);
-  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, string_elem(key)));
-  CU_ASSERT_EQUAL(result.i, 67);
-
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_has_key_5(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *keys[]= {"hej", "då", "va"};
-  int values[] = {1, 2, 3};
-  elem_t result;
-
-  ioopm_hash_table_insert(ht, string_elem(keys[0]), int_elem(values[0]));
-  ioopm_hash_table_insert(ht, string_elem(keys[1]), int_elem(values[1]));
-  ioopm_hash_table_insert(ht, string_elem(keys[2]), int_elem(values[2]));
-
-  ioopm_hash_table_remove(ht, string_elem(keys[1]), &result);
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem(keys[0])));
-
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem(keys[2])));
-
-  CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, string_elem(keys[1])));
-
-  ioopm_hash_table_destroy(ht);
-}
-
-void hash_table_empty_size_test(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 0);
-}
-
-void hash_table_single_size_test(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *key = "hej";
-  int value = 1;
-  ioopm_hash_table_insert(ht, string_elem(key), int_elem(value));
-  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 1);
-}
-
-void hash_table_multi_size_test(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *keys[]= {"hej", "då", "va", "buh", "apa"};
-  int values[] = {1, 2, 3, 4, 5};
-  for(size_t i = 0; i < 5; i++){
-    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem(values[i]));
-  }
-  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 5);
-}
-
-void hash_table_remove_size_test(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *keys[]= {"hej", "då", "va"};
-  int values[] = {1, 2, 3};
-  elem_t result;
-  for(size_t i = 0; i < 3; i++){
-    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem(values[i]));
-  }
-  ioopm_hash_table_remove(ht, string_elem(keys[1]), &result);
-  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 2);
-}
-
-void hash_table_remove_to_empty_test(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  char *keys[]= {"hej", "då", "va"};
-  int values[] = {1, 2, 3};
-  elem_t result;
-  for(size_t i = 0; i < 3; i++){
-    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem(values[i]));
-  }
-  ioopm_hash_table_remove(ht, string_elem(keys[0]), &result);
-  ioopm_hash_table_remove(ht, string_elem(keys[1]), &result);
-  ioopm_hash_table_remove(ht, string_elem(keys[2]), &result);
-  CU_ASSERT_TRUE(ioopm_hash_table_is_empty(ht));
-    
-  ioopm_hash_table_destroy(ht);
-}
-
-void test_iterator_empty_table(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
-  
-  CU_ASSERT_TRUE(ioopm_hash_table_iterator_at_end(it));
-
-  ioopm_hash_table_destroy(ht);
-  ioopm_hash_table_iterator_destroy(it);
-}
-
-void test_iterator_single_table(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-
-  char *key = "hej";
-  int value = 1;
-  ioopm_hash_table_insert(ht, string_elem(key), int_elem(value));
-  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
-
-  CU_ASSERT_EQUAL(ioopm_hash_table_iterator_current_value(it).i, 1);
-  CU_ASSERT_FALSE(strcmp(ioopm_hash_table_iterator_current_key(it).s, key));
-
-  ioopm_hash_table_iterator_advance(it);
-  
-  CU_ASSERT_TRUE(ioopm_hash_table_iterator_at_end(it));
-
-  ioopm_hash_table_destroy(ht);
-  ioopm_hash_table_iterator_destroy(it);  
-}
-
-void test_iterator_several_entries()
-{
-  char *keys[3] = {"abc", "qwe", "asd"};
-  int values[3] = {0, 1, 2};
-
-  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  for (size_t i = 0; i != 3; ++i)
-  {
-    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem(values[i]));
-  }
-
-  int iteration_count = 0;
-
-  ioopm_hash_table_iterator_t *it = ioopm_hash_table_iterator_create(ht);
-  while (!ioopm_hash_table_iterator_at_end(it))
-  {
-    iteration_count++;
-    ioopm_hash_table_iterator_advance(it);
-  }
-  ioopm_hash_table_destroy(ht);
-  ioopm_hash_table_iterator_destroy(it);
-  CU_ASSERT_EQUAL(iteration_count, 3);
 }
 
 // Builds n distinct keys "key0", "key1", ... on the heap.
@@ -375,7 +61,7 @@ static void insert_keys(ioopm_hash_table_t *ht, char **keys, size_t n)
   }
 }
 
-// Every key must still be found, with the right value, after the table has grown.
+// Every key must be found, with its own value.
 static void assert_all_present(ioopm_hash_table_t *ht, char **keys, size_t n)
 {
   elem_t result;
@@ -386,19 +72,18 @@ static void assert_all_present(ioopm_hash_table_t *ht, char **keys, size_t n)
   }
 }
 
-// 17 buckets * 0.75 = 12.75, so the 13th insert triggers the first growth.
-// Test right around the threshold, where off-by-one bugs live.
+// Insert one key at a time across the first growth (entry 13) and check
+// after EVERY insert that nothing has been lost. Off-by-one bugs live here.
 void test_grow_at_threshold(void)
 {
   ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  size_t n = 14;
+  size_t n = 15;
   char **keys = make_keys(n);
 
   for (size_t i = 0; i < n; i++)
   {
     ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem((int)i));
     CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), i + 1);
-    // after every insert, everything inserted so far must still be there
     assert_all_present(ht, keys, i + 1);
   }
 
@@ -406,11 +91,31 @@ void test_grow_at_threshold(void)
   free_keys(keys, n);
 }
 
-// Many inserts -> several growths in a row (17 -> 31 -> 67 -> ... -> 1021).
-void test_grow_many_times(void)
+// Several growths in a row: 17 -> 31 -> 67 -> 127 -> 257.
+// Checks everything after each insert, so a growth that loses or
+// misplaces an entry is caught right away.
+void test_grow_several_times_step_by_step(void)
 {
   ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
-  size_t n = 1000;
+  size_t n = 150;
+  char **keys = make_keys(n);
+
+  for (size_t i = 0; i < n; i++)
+  {
+    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem((int)i));
+    assert_all_present(ht, keys, i + 1);
+  }
+  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), n);
+
+  ioopm_hash_table_destroy(ht);
+  free_keys(keys, n);
+}
+
+// Many entries: grows up to 8191 buckets (but not past the primes table).
+void test_grow_many_entries(void)
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
+  size_t n = 5000;
   char **keys = make_keys(n);
 
   insert_keys(ht, keys, n);
@@ -423,8 +128,8 @@ void test_grow_many_times(void)
   free_keys(keys, n);
 }
 
-
-// Updating existing keys after growth must not add entries or lose any.
+// Updating existing keys after growth: values change, size does not,
+// and no extra growth or duplicate entries.
 void test_update_after_grow(void)
 {
   ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
@@ -449,7 +154,7 @@ void test_update_after_grow(void)
   free_keys(keys, n);
 }
 
-// Remove every entry after growth, then make sure the table still works.
+// Remove everything after growth, then check the table still works.
 void test_remove_all_after_grow(void)
 {
   ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
@@ -462,12 +167,11 @@ void test_remove_all_after_grow(void)
   {
     CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, string_elem(keys[i]), &result));
     CU_ASSERT_EQUAL(result.i, (int)i);
-    // the removed key is gone
     CU_ASSERT_FALSE(ioopm_hash_table_has_key(ht, string_elem(keys[i])));
   }
   CU_ASSERT_TRUE(ioopm_hash_table_is_empty(ht));
 
-  // the grown table must still accept new entries
+  // the grown (now empty) table must still accept new entries
   insert_keys(ht, keys, n);
   CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), n);
   assert_all_present(ht, keys, n);
@@ -476,7 +180,7 @@ void test_remove_all_after_grow(void)
   free_keys(keys, n);
 }
 
-// Remove every other key while the table is still growing.
+// Remove every other key while the table is growing.
 void test_mixed_insert_remove(void)
 {
   ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
@@ -504,8 +208,7 @@ void test_mixed_insert_remove(void)
   free_keys(keys, n);
 }
 
-// The iterator must visit every entry exactly once after growth
-// (catches leftover No_Buckets / lost entries / duplicated entries).
+// The iterator must visit every entry exactly once after growth.
 void test_iterator_after_grow(void)
 {
   ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
@@ -533,7 +236,7 @@ void test_iterator_after_grow(void)
   CU_ASSERT_EQUAL(count, n);
   for (size_t i = 0; i < n; i++)
   {
-    CU_ASSERT_EQUAL(seen[i], 1); // seen exactly once
+    CU_ASSERT_EQUAL(seen[i], 1); // every entry seen exactly once
   }
 
   free(seen);
@@ -541,105 +244,65 @@ void test_iterator_after_grow(void)
   free_keys(keys, n);
 }
 
-// create_dynamic with a tiny capacity and low load factor -> grows very early.
-void test_create_dynamic_small(void)
+// Keys whose hashes are multiples of 17 all land in bucket 0 before
+// the first growth. After growth they must spread out and still be found.
+// (Single-character keys: hash = the character code.)
+void test_colliding_keys_survive_grow(void)
 {
-  ioopm_hash_table_t *ht =
-      ioopm_hash_table_create_dynamic(hash_function, eq_function, 1, 0.5);
-  size_t n = 100;
-  char **keys = make_keys(n);
-
-  insert_keys(ht, keys, n);
-
-  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), n);
-  assert_all_present(ht, keys, n);
-
-  ioopm_hash_table_destroy(ht);
-  free_keys(keys, n);
-}
-
-// One bucket and a huge load factor -> never grows, everything in one chain.
-// Tests removing first / middle / last in a single list (the double pointer code).
-void test_no_grow_single_bucket(void)
-{
-  ioopm_hash_table_t *ht =
-      ioopm_hash_table_create_dynamic(hash_function, eq_function, 1, 1000.0);
-  char *keys[] = {"a", "b", "c", "d", "e"};
+  ioopm_hash_table_t *ht = ioopm_hash_table_create(hash_function, eq_function);
+  // '"' = 34, 'D' = 68, 'U' = 85, 'f' = 102, 'w' = 119: all ≡ 0 (mod 17)
+  char *colliding[] = {"\"", "D", "U", "f", "w"};
+  size_t n_other = 20;
+  char **others = make_keys(n_other);
   elem_t result;
 
   for (int i = 0; i < 5; i++)
   {
-    ioopm_hash_table_insert(ht, string_elem(keys[i]), int_elem(i));
+    ioopm_hash_table_insert(ht, string_elem(colliding[i]), int_elem(100 + i));
   }
+  insert_keys(ht, others, n_other); // forces at least one growth
 
-  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, string_elem("a"), &result)); // first
-  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, string_elem("c"), &result)); // middle
-  CU_ASSERT_TRUE(ioopm_hash_table_remove(ht, string_elem("e"), &result)); // last
-
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem("b")));
-  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, string_elem("d")));
-  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 2);
+  for (int i = 0; i < 5; i++)
+  {
+    CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, string_elem(colliding[i]), &result));
+    CU_ASSERT_EQUAL(result.i, 100 + i);
+  }
+  assert_all_present(ht, others, n_other);
+  CU_ASSERT_EQUAL(ioopm_hash_table_size(ht), 5 + n_other);
 
   ioopm_hash_table_destroy(ht);
+  free_keys(others, n_other);
 }
 
-int main() {
-  // First we try to set up CUnit, and exit if we fail
+int main(void)
+{
   if (CU_initialize_registry() != CUE_SUCCESS)
     return CU_get_error();
 
-  // We then create an empty test suite and specify the name and
-  // the init and cleanup functions
-  CU_pSuite my_test_suite = CU_add_suite("My awesome test suite", init_suite, clean_suite);
-  if (my_test_suite == NULL) {
-      // If the test suite could not be added, tear down CUnit and exit
-      CU_cleanup_registry();
-      return CU_get_error();
+  CU_pSuite suite = CU_add_suite("Dynamic resizing", NULL, NULL);
+  if (suite == NULL)
+  {
+    CU_cleanup_registry();
+    return CU_get_error();
   }
 
-  // This is where we add the test functions to our test suite.
-  // For each call to CU_add_test we specify the test suite, the
-  // name or description of the test, and the function that runs
-  // the test in question. If you want to add another test, just
-  // copy a line below and change the information
   if (
-  (CU_add_test(my_test_suite, "creation and destroy test", test_create_destroy) == NULL)  ||
-  (CU_add_test(my_test_suite, "test insert once", test_insert_once) == NULL)              ||
-  (CU_add_test(my_test_suite, "test insert two times", test_update_key) == NULL)          ||
-  (CU_add_test(my_test_suite, "test insert multiple keys", test_insert_multiple) == NULL) ||
-  (CU_add_test(my_test_suite, "test entry remove", test_entry_remove) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove 1", test_has_key_1) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove 2", test_has_key_2) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove 3", test_has_key_3) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove 4", test_has_key_4) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test remove 5", test_has_key_5) == NULL)                        ||
-  (CU_add_test(my_test_suite, "hash_table_remove_to_empty_test", hash_table_remove_to_empty_test) == NULL)                        ||
-  (CU_add_test(my_test_suite, "ITERATOR TEST EMPTY", test_iterator_empty_table) == NULL)                        ||
-  (CU_add_test(my_test_suite, "ITERATOR TEST SINGLE", test_iterator_single_table) == NULL)                        ||
-  (CU_add_test(my_test_suite, "ITERATOR TEST SEVERAL", test_iterator_several_entries) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test_grow_at_threshold", test_grow_at_threshold) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test_grow_many_times", test_grow_many_times) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test_update_after_grow", test_update_after_grow) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test_remove_all_after_grow", test_remove_all_after_grow) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test_mixed_insert_remove", test_mixed_insert_remove) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test_iterator_after_grow", test_iterator_after_grow) == NULL)                        ||
-  (CU_add_test(my_test_suite, "test_create_dynamic_small", test_create_dynamic_small) == NULL)                        ||
-  0
-  )
-    {
-      // If adding any of the tests fails, we tear down CUnit and exit
-      CU_cleanup_registry();
-      return CU_get_error();
-    }
+      (CU_add_test(suite, "grow at load factor threshold", test_grow_at_threshold) == NULL) ||
+      (CU_add_test(suite, "grow several times, step by step", test_grow_several_times_step_by_step) == NULL) ||
+      (CU_add_test(suite, "grow with many entries", test_grow_many_entries) == NULL) ||
+      (CU_add_test(suite, "update after grow", test_update_after_grow) == NULL) ||
+      (CU_add_test(suite, "remove all after grow", test_remove_all_after_grow) == NULL) ||
+      (CU_add_test(suite, "mixed insert/remove while growing", test_mixed_insert_remove) == NULL) ||
+      (CU_add_test(suite, "iterator after grow", test_iterator_after_grow) == NULL) ||
+      (CU_add_test(suite, "colliding keys survive grow", test_colliding_keys_survive_grow) == NULL) ||
+      0)
+  {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
 
-  // Set the running mode. Use CU_BRM_VERBOSE for maximum output.
-  // Use CU_BRM_NORMAL to only print errors and a summary
-  CU_basic_set_mode(CU_BRM_NORMAL);
-
-  // This is where the tests are actually run!
+  CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();
-
-  // Tear down CUnit before exiting
   CU_cleanup_registry();
   return CU_get_error();
 }

@@ -19,10 +19,6 @@
 typedef struct entry entry_t;
 typedef struct hash_table ioopm_hash_table_t;
 
-/// @brief create a new dynamic hashtable
-/// @return a new dynamic hashtable
-ioopm_hash_table_t *ioopm_hash_table_create_dynamic(ioopm_hash_function *hash_fn, ioopm_eq_function *key_eq_fn, size_t primes_index, double load);
-
 /// @brief Create a new hash table
 /// @return A new empty hash table
 ioopm_hash_table_t *ioopm_hash_table_create(ioopm_hash_function *hash_fn, ioopm_eq_function *key_eq_fn);

@@ -39,15 +39,12 @@ struct hash_table_iterator
 
 
 
-ioopm_hash_table_t *ioopm_hash_table_create_dynamic(ioopm_hash_function *hash_fn, ioopm_eq_function *key_eq_fn, size_t primes_index, double load){
-  ioopm_hash_table_t *new = calloc(1, sizeof(ioopm_hash_table_t));
-  new->hash_fn = hash_fn;
-  new->key_eq_fn = key_eq_fn;
-  new->bucket_amount = primes[primes_index];
-  new->load = load;
-  new->buckets = calloc(new->bucket_amount, sizeof(entry_t*));
-  new->prime_checker = 0;
-  return new;
+static ioopm_hash_table_t *create_dynamic(ioopm_hash_table_t *ht, size_t primes_index, double load){
+  ht->bucket_amount = primes[primes_index];
+  ht->load = load;
+  ht->buckets = calloc(ht->bucket_amount, sizeof(entry_t*));
+  ht->prime_checker = 0;
+  return ht;
 }
 
 
@@ -57,8 +54,7 @@ ioopm_hash_table_t *ioopm_hash_table_create(ioopm_hash_function *hash_fn, ioopm_
   
   new->hash_fn = hash_fn;
   new->key_eq_fn = key_eq_fn;
-  new->bucket_amount = primes[0];
-  new->load = 0.75;
+  new = create_dynamic(new, 0, 0.75);
   new->buckets = calloc(new->bucket_amount, sizeof(entry_t*));
   new->prime_checker = 0;
   return new;
