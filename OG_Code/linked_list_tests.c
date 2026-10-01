@@ -1,0 +1,222 @@
+#include <CUnit/Basic.h>
+#include "Headers/linked_list.h"
+#include "Headers/common.h"
+
+#define int_elem(x)   ((elem_t) { .i = (x) })
+#define bool_elem(x)  ((elem_t) { .b = (x) })
+#define ptr_elem(x)   ((elem_t) { .p = (x) })
+#define string_elem(x) ((elem_t) { .s = (x) })
+
+int init_suite(void)
+{
+  // Change this function if you want to do something *before* you
+  // run a test suite
+  return 0;
+}
+
+int clean_suite(void)
+{
+  // Change this function if you want to do something *after* you
+  // run a test suite
+  return 0;
+}
+
+// These are example test functions. You should replace them with
+// functions of your own.
+void test_create_list(void)
+{
+  ioopm_list_t *list = ioopm_list_create();
+  ioopm_list_destroy(list);
+}
+
+void test_add_one_node_to_empty_list(void)
+{
+  ioopm_list_t *list = ioopm_list_create();
+  ioopm_list_append(list, int_elem(5));
+  CU_ASSERT_EQUAL(ioopm_list_size(list), 1);
+  ioopm_list_destroy(list);
+}
+
+void test_add_and_get_head(void)
+{
+  ioopm_list_t *list = ioopm_list_create();
+  ioopm_list_append(list, int_elem(1));
+  ioopm_list_append(list, int_elem(2));
+  ioopm_list_append(list, int_elem(3));
+  CU_ASSERT_EQUAL(ioopm_list_head(list).i, 1);
+  ioopm_list_destroy(list);
+}
+
+void test_head_and_last(void)
+{
+  ioopm_list_t *list = ioopm_list_create();
+  ioopm_list_append(list, int_elem(5));
+  ioopm_list_append(list, int_elem(60));
+  ioopm_list_append(list, int_elem(34));
+  CU_ASSERT_EQUAL(ioopm_list_head(list).i, 5);
+  CU_ASSERT_EQUAL(ioopm_list_last(list).i, 34);
+  ioopm_list_destroy(list);
+}
+
+void test_insert(void)
+{
+  ioopm_list_t *list = ioopm_list_create();
+  ioopm_list_append(list, int_elem(3));
+  ioopm_list_append(list, int_elem(4));
+  ioopm_list_prepend(list, int_elem(2));
+  ioopm_list_insert(list, 0, int_elem(1));
+  ioopm_list_insert(list, 4, int_elem(5));
+  CU_ASSERT_EQUAL(ioopm_list_head(list).i, 1);
+  CU_ASSERT_EQUAL(ioopm_list_last(list).i, 5);
+  ioopm_list_destroy(list);
+}
+
+void test_remove(void)
+{
+  ioopm_list_t *list = ioopm_list_create();
+  elem_t result = int_elem(0);
+  ioopm_list_insert(list, 0, int_elem(5));
+  ioopm_list_insert(list, 0, int_elem(4));
+  ioopm_list_insert(list, 0, int_elem(3));
+  ioopm_list_insert(list, 0, int_elem(2));
+  ioopm_list_insert(list, 0, int_elem(1));
+
+  CU_ASSERT_TRUE(ioopm_list_remove(list, 0, &result));
+  CU_ASSERT_EQUAL(result.i, 1);
+  CU_ASSERT_TRUE(ioopm_list_remove(list, 3, &result));
+  CU_ASSERT_EQUAL(result.i, 5);
+  ioopm_list_destroy(list);
+}
+
+void test_get(void)
+{
+  ioopm_list_t *list = ioopm_list_create();
+  elem_t result = int_elem(0);
+
+  ioopm_list_append(list, int_elem(5));
+  CU_ASSERT_TRUE(ioopm_list_get(list, 0, &result));
+  CU_ASSERT_EQUAL(result.i, 5);
+
+  ioopm_list_insert(list, 1, int_elem(10));
+  ioopm_list_insert(list, 2, int_elem(15));
+  ioopm_list_append(list, int_elem(20));
+  // [5, 10, 15, 20]
+
+  CU_ASSERT_TRUE(ioopm_list_get(list, 0, &result));
+  CU_ASSERT_EQUAL(result.i, 5);
+
+  CU_ASSERT_TRUE(ioopm_list_get(list, 2, &result));
+  CU_ASSERT_EQUAL(result.i, 15);
+
+  CU_ASSERT_TRUE(ioopm_list_get(list, 3, &result));
+  CU_ASSERT_EQUAL(result.i, 20);
+
+  CU_ASSERT_FALSE(ioopm_list_get(list, -1, &result));
+  CU_ASSERT_FALSE(ioopm_list_get(list, 4, &result));
+
+  CU_ASSERT_TRUE(ioopm_list_remove(list, 2, &result));
+  CU_ASSERT_EQUAL(result.i, 15);
+
+  CU_ASSERT_TRUE(ioopm_list_get(list, 2, &result));
+  CU_ASSERT_EQUAL(result.i, 20);
+
+  ioopm_list_destroy(list);
+}
+
+void test_size()
+{
+  ioopm_list_t *list = ioopm_list_create();
+  elem_t result = int_elem(0);
+  CU_ASSERT_EQUAL(ioopm_list_size(list), 0);
+
+  ioopm_list_append(list, int_elem(1));
+  ioopm_list_append(list, int_elem(2));
+  ioopm_list_append(list, int_elem(3));
+  ioopm_list_append(list, int_elem(4));
+  ioopm_list_append(list, int_elem(5));
+
+  CU_ASSERT_EQUAL(ioopm_list_size(list), 5);
+
+  CU_ASSERT_TRUE(ioopm_list_remove(list, 4, &result));
+  CU_ASSERT_EQUAL(ioopm_list_size(list), 4);
+
+  ioopm_list_remove(list, 0, &result);
+  ioopm_list_remove(list, 0, &result);
+  ioopm_list_remove(list, 0, &result);
+  ioopm_list_remove(list, 0, &result);
+
+  CU_ASSERT_EQUAL(ioopm_list_size(list), 0);
+  CU_ASSERT_FALSE(ioopm_list_remove(list, 1, &result));
+
+  ioopm_list_destroy(list);
+}
+
+void test_empty_list()
+{
+  ioopm_list_t *list = ioopm_list_create();
+  elem_t result = int_elem(0);
+
+  CU_ASSERT_TRUE(ioopm_list_is_empty(list));
+  ioopm_list_append(list, int_elem(67));
+  CU_ASSERT_FALSE(ioopm_list_is_empty(list));
+  ioopm_list_append(list, int_elem(68));
+  CU_ASSERT_FALSE(ioopm_list_is_empty(list));
+  ioopm_list_remove(list, 1, &result);
+  ioopm_list_remove(list, 0, &result);
+  CU_ASSERT_TRUE(ioopm_list_is_empty(list));
+
+  ioopm_list_destroy(list);
+}
+
+
+
+int main()
+{
+  // First we try to set up CUnit, and exit if we fail
+  if (CU_initialize_registry() != CUE_SUCCESS)
+    return CU_get_error();
+
+  // We then create an empty test suite and specify the name and
+  // the init and cleanup functions
+  CU_pSuite my_test_suite = CU_add_suite("My awesome test suite", init_suite, clean_suite);
+  if (my_test_suite == NULL)
+  {
+    // If the test suite could not be added, tear down CUnit and exit
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+
+  // This is where we add the test functions to our test suite.
+  // For each call to CU_add_test we specify the test suite, the
+  // name or description of the test, and the function that runs
+  // the test in question. If you want to add another test, just
+  // copy a line below and change the information
+  if (
+      (CU_add_test(my_test_suite, "A simple create and destroy test", test_create_list) == NULL) ||
+      (CU_add_test(my_test_suite, "test for adding a node and checking size", test_add_one_node_to_empty_list) == NULL) ||
+      (CU_add_test(my_test_suite, "test for adding and getting head from list", test_add_and_get_head) == NULL) ||
+      (CU_add_test(my_test_suite, "test for getting head and last from list", test_head_and_last) == NULL) ||
+      (CU_add_test(my_test_suite, "test insert head and last", test_insert) == NULL) ||
+      (CU_add_test(my_test_suite, "test remove", test_remove) == NULL) ||
+      (CU_add_test(my_test_suite, "test get", test_get) == NULL) ||
+      (CU_add_test(my_test_suite, "test size", test_size) == NULL) ||
+      (CU_add_test(my_test_suite, "test empty", test_empty_list) == NULL) ||
+
+      0)
+  {
+    // If adding any of the tests fails, we tear down CUnit and exit
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+
+  // Set the running mode. Use CU_BRM_VERBOSE for maximum output.
+  // Use CU_BRM_NORMAL to only print errors and a summary
+  CU_basic_set_mode(CU_BRM_VERBOSE);
+
+  // This is where the tests are actually run!
+  CU_basic_run_tests();
+
+  // Tear down CUnit before exiting
+  CU_cleanup_registry();
+  return CU_get_error();
+}
