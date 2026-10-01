@@ -151,10 +151,21 @@ void bigger_hashtable(ioopm_hash_table_t *ht)
 {
   size_t old_buckets = primes[ht->prime_checker];
   ht->prime_checker += 1;
-  size_t new_buckets = primes[ht->prime_checker] - old_buckets;
-  realloc(ht->buckets, new_buckets);
+  size_t new_buckets = primes[ht->prime_checker] - old_buckets; // reallov tar bar nya värdet inte skillnaden och size of inte eleemnt
+  realloc(ht->buckets, sizeof());
   
+  for (size_t i = 0; i < old_buckets; i++)
+  {
+    entry_t *current = ht->buckets[i];
+    while( current != NULL){
+      entry_t *next = current->next;
+      size_t new_bucket = ht->hash_fn(current->key) % new_buckets;
+      current->next = ht->buckets[new_bucket];
+      ht->buckets[new_bucket] = current;
 
+      current = next;
+    }
+  }
 
   
   //skala upp och rehasha
